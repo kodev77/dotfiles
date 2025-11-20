@@ -1,0 +1,10 @@
+{
+  "sql.formatter": "sql-formatter",
+  "sql.formatOptions": {
+    "keywordCase": "upper",
+    "expressionWidth": 999,
+    "linesBetweenQueries": 0
+  },
+  "coc.preferences.formatOnSaveFiletypes": ["sql"]
+}
+

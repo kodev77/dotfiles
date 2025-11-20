@@ -1,0 +1,35 @@
+" Navigate popup/confirm
+inoremap <silent><expr> <CR> pumvisible() ? coc#pum#confirm() : "\<CR>"
+inoremap <silent><expr> <Tab> pumvisible() ? coc#pum#next(1) : "\<Tab>"
+inoremap <silent><expr> <S-Tab> pumvisible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Trigger (reopen) CoC completion popup manually
+inoremap <silent><expr> <C-Space> coc#refresh()
+
+
+" Let Vim know we can complete words with <Tab>
+set completeopt=menuone,noinsert,noselect
+
+
+" === CoC LSP Navigation & Actions ===
+" Go to definition / type definition / implementation / references
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Rename symbol
+nmap <leader>rn <Plug>(coc-rename)
+
+" Code actions (quick fixes, imports)
+nmap <leader>ca <Plug>(coc-codeaction)
+
+" Hover documentation (K)
+nnoremap <silent> K :call CocActionAsync('doHover')<CR>
+
+" Jump between diagnostics (errors/warnings)
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" Format file or selection
+command! -nargs=0 Format :call CocAction('format')
