@@ -32,3 +32,5 @@ lgf = diff-tree --no-commit-id --name-only -r
 [core]
 	autocrlf = false
 	filemode = false
+[includeIf "gitdir:~/repo/rpc/"]
+    path = ~/repo/rpc/.gitconfig

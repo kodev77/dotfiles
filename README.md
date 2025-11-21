@@ -7,12 +7,13 @@ cat ~/.ssh/id_rsa.pub
 ### start and add ssh key into agent
 ```
 eval "$(ssh-agent -s)"
+chmod 600 ~/.ssh/id_rsa
 ssh-add ~/.ssh/id_rsa
 ```
 
 ### symlink the local files to our repo version
 ```
-ln -s ~/git-setup/.gitconfig ~/.gitconfig
-ln -s ~/vim-setup/.vimrc ~/.vimrc
-ln -s ~/vim-setup/.vim ~/.vim
+ln -s ~/repo/ko/dotfiles/.gitconfig ~/.gitconfig
+ln -s ~/repo/ko/dotfiles/.vimrc ~/.vimrc
+ln -s ~/repo/ko/dotfiles/.vim ~/.vim
 ```
