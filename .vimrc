@@ -269,7 +269,7 @@ let g:db_ui_save_location = expand('~/.db_ui_queries')
 let g:db_ui_execute_on_save = 0
 
 let g:dbs = {
-\ 'local_mysql': 'mysql://root:BestRock1234@localhost',
+\ 'local_mysql': 'mysql://root:BestRock1234@172.27.208.1',
 \ 'local_sqlserver': 'sqlserver://sa:letmein@172.27.208.1/sqldb-jobtracker-dev-scus?encrypt=true&TrustServerCertificate=true',
 \ 'azure_dev': 'sqlserver://<username>:<password>@sql-jobtracker-dev-southcentralus.database.windows.net/sqldb-jobtracker-dev-scus',
 \ }

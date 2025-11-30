@@ -319,6 +319,21 @@ else
 fi
 
 # -----------------------------------------------------------------------------
+# MySQL client setup (for vim-dadbod MySQL connections)
+# -----------------------------------------------------------------------------
+echo ""
+echo "🔍 Checking for MySQL client..."
+
+if command -v mysql >/dev/null 2>&1; then
+  echo "✅ MySQL client already installed: $(mysql --version)"
+else
+  echo "📦 Installing MySQL client..."
+  sudo apt-get update -qq
+  sudo apt-get install -y mysql-client >/dev/null
+  echo "✅ MySQL client installed: $(mysql --version)"
+fi
+
+# -----------------------------------------------------------------------------
 # Done
 # -----------------------------------------------------------------------------
 echo ""
@@ -331,4 +346,5 @@ echo "   - code-minimap: $(code-minimap --version 2>/dev/null | head -n 1 || ech
 echo "   - node: $(node -v 2>/dev/null || echo 'not found')"
 echo "   - dotnet: $(dotnet --version 2>/dev/null || echo 'not found')"
 echo "   - sqlcmd: $(sqlcmd -? 2>/dev/null | head -n 1 || echo 'not found')"
+echo "   - mysql: $(mysql --version 2>/dev/null || echo 'not found')"
 
