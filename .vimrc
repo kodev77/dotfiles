@@ -72,6 +72,16 @@ call plug#begin('~/.vim/plugged')
 " File manager
 Plug 'mcchrish/nnn.vim'
 
+" File explorer (vim-fern)
+Plug 'lambdalisue/vim-fern'
+Plug 'lambdalisue/vim-fern-git-status'
+Plug 'lambdalisue/vim-fern-hijack'
+
+" Nerd Font support for fern
+Plug 'lambdalisue/vim-nerdfont'
+Plug 'lambdalisue/vim-fern-renderer-nerdfont'
+Plug 'lambdalisue/glyph-palette.vim'
+
 " Debugging
 Plug 'puremourning/vimspector'
 
@@ -299,13 +309,98 @@ autocmd BufReadPost,BufWritePost * if &filetype ==# 'dbout' | call s:AddLeftBord
 " =============================================================================
 " NNN.VIM (FILE MANAGER)
 " =============================================================================
-nnoremap <leader>n :NnnPicker %:p:h<CR>
+nnoremap <leader>fn :NnnPicker %:p:h<CR>
 
 " Easy escape from terminal mode in nnn buffers
 autocmd FileType nnn tnoremap <buffer> <Esc> <C-\><C-n>
 
 " Quick command line access from nnn terminal
 autocmd FileType nnn tnoremap <buffer> <C-o> <C-\><C-n>:
+
+" =============================================================================
+" VIM-FERN (FILE EXPLORER)
+" =============================================================================
+let g:fern#drawer_width = 30
+let g:fern#default_hidden = 1
+let g:fern#renderer = "nerdfont"
+
+" Make fern-hijack use drawer mode for 'vim .'
+let g:fern#disable_drawer_hover_popup = 1
+let g:fern_hijack_drawer = 1
+
+augroup FernHijackDrawer
+  autocmd!
+  autocmd BufEnter * ++nested call s:hijack_directory()
+augroup END
+
+function! s:hijack_directory() abort
+  let path = expand('%:p')
+  if !isdirectory(path)
+    return
+  endif
+  bwipeout %
+  execute printf('Fern %s -drawer -toggle', fnameescape(path))
+endfunction
+
+" Toggle fern drawer at current file's directory
+nnoremap <silent> <leader>n :Fern %:h -drawer -toggle -reveal=%<CR>
+
+" Open fern in current window (split mode)
+nnoremap <silent> <leader>N :Fern %:h -reveal=%<CR>
+
+" Custom fern buffer mappings
+function! s:init_fern() abort
+  " Navigation
+  nmap <buffer><expr> <CR> fern#smart#leaf(
+        \ "\<Plug>(fern-action-open)",
+        \ "\<Plug>(fern-action-enter)",
+        \ )
+  nmap <buffer> - <Plug>(fern-action-leave)
+  nmap <buffer> l <Plug>(fern-action-expand)
+  nmap <buffer> h <Plug>(fern-action-collapse)
+
+  " File operations
+  nmap <buffer> e <Plug>(fern-action-open)
+  nmap <buffer> s <Plug>(fern-action-open:split)
+  nmap <buffer> v <Plug>(fern-action-open:vsplit)
+  nmap <buffer> t <Plug>(fern-action-open:tabedit)
+
+  " File management
+  nmap <buffer> N <Plug>(fern-action-new-file)
+  nmap <buffer> K <Plug>(fern-action-new-dir)
+  nmap <buffer> R <Plug>(fern-action-rename)
+  nmap <buffer> D <Plug>(fern-action-remove)
+  nmap <buffer> c <Plug>(fern-action-clipboard-copy)
+  nmap <buffer> x <Plug>(fern-action-clipboard-move)
+  nmap <buffer> p <Plug>(fern-action-clipboard-paste)
+
+  " Mark operations
+  nmap <buffer> m <Plug>(fern-action-mark:toggle)
+  nmap <buffer> <Space>m <Plug>(fern-action-mark:clear)
+
+  " Utility
+  nmap <buffer> r <Plug>(fern-action-reload)
+  nmap <buffer> . <Plug>(fern-action-hidden:toggle)
+  nmap <buffer> y <Plug>(fern-action-yank:path)
+  nmap <buffer> ? <Plug>(fern-action-help)
+endfunction
+
+augroup fern-custom
+  autocmd!
+  autocmd FileType fern call s:init_fern()
+augroup END
+
+" Apply glyph palette colors for file icons
+augroup fern-glyph-palette
+  autocmd!
+  autocmd FileType fern call glyph_palette#apply()
+augroup END
+
+" Disable minimap in fern buffers
+augroup FernMinimapFix
+  autocmd!
+  autocmd FileType fern silent! MinimapClose
+augroup END
 
 " =============================================================================
 " MINIMAP
