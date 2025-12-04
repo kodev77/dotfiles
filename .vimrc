@@ -64,13 +64,7 @@ highlight Conceal ctermfg=DarkGray guifg=#606060
 " Set this to 1 to use ultisnips for snippet handling
 let s:using_snippets = 0
 
-" Disable nnn.vim default mappings so we can set our own
-let g:nnn#set_default_mappings = 0
-
 call plug#begin('~/.vim/plugged')
-
-" File manager
-Plug 'mcchrish/nnn.vim'
 
 " File explorer (vim-fern)
 Plug 'lambdalisue/vim-fern'
@@ -305,17 +299,6 @@ function! s:AddLeftBorder()
 endfunction
 
 autocmd BufReadPost,BufWritePost * if &filetype ==# 'dbout' | call s:AddLeftBorder() | endif
-
-" =============================================================================
-" NNN.VIM (FILE MANAGER)
-" =============================================================================
-nnoremap <leader>fn :NnnPicker %:p:h<CR>
-
-" Easy escape from terminal mode in nnn buffers
-autocmd FileType nnn tnoremap <buffer> <Esc> <C-\><C-n>
-
-" Quick command line access from nnn terminal
-autocmd FileType nnn tnoremap <buffer> <C-o> <C-\><C-n>:
 
 " =============================================================================
 " VIM-FERN (FILE EXPLORER)
