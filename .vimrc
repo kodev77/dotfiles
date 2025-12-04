@@ -305,7 +305,7 @@ autocmd BufReadPost,BufWritePost * if &filetype ==# 'dbout' | call s:AddLeftBord
 " =============================================================================
 let g:fern#drawer_width = 30
 let g:fern#default_hidden = 1
-let g:fern#renderer = "nerdfont"
+" let g:fern#renderer = "nerdfont"
 
 " Make fern-hijack use drawer mode for 'vim .'
 let g:fern#disable_drawer_hover_popup = 1
