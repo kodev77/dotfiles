@@ -3,6 +3,14 @@
 " =============================================================================
 let mapleader = " "
 set nocompatible
+
+" Windows compatibility (shellslash set after plug#end due to vim-plug incompatibility)
+if has('win32') || has('win64')
+  " Add ~/.vim to runtimepath (Windows Vim defaults to vimfiles, not .vim)
+  set runtimepath^=~/.vim
+  " OmniSharp server path for Windows
+  let g:OmniSharp_server_path = 'C:/Tools/omnisharp-roslyn/OmniSharp.exe'
+endif
 set encoding=utf-8
 scriptencoding utf-8
 
@@ -187,6 +195,11 @@ command! -nargs=0 Format :call CocAction('format')
 " OMNISHARP / C# DEVELOPMENT
 " =============================================================================
 let g:OmniSharp_server_use_net6 = 1
+let g:OmniSharp_start_server = 1
+let g:OmniSharp_highlighting = 3
+let g:OmniSharp_diagnostic_enable = 1
+let g:OmniSharp_diagnostic_show_symbol = 1
+let g:OmniSharp_selector_ui = 'fzf'
 
 " Completion options (OmniSharp specific - extends CoC settings)
 set completeopt+=popuphidden
@@ -234,6 +247,25 @@ let g:sharpenup_statusline_opts.Highlight = 0
 let g:asyncomplete_auto_popup = 1
 let g:asyncomplete_auto_completeopt = 0
 
+" C# file settings
+autocmd FileType cs setlocal omnifunc=OmniSharp#Complete
+autocmd FileType cs setlocal shiftwidth=4 tabstop=4 softtabstop=4 expandtab
+autocmd BufWritePre *.cs OmniSharpCodeFormat
+
+" C#-specific keymaps (buffer-local to avoid conflicts with CoC)
+augroup omnisharp_maps
+  autocmd!
+  autocmd FileType cs nnoremap <buffer> gd :OmniSharpGotoDefinition<CR>
+  autocmd FileType cs nnoremap <buffer> gi :OmniSharpFindImplementations<CR>
+  autocmd FileType cs nnoremap <buffer> gr :OmniSharpFindUsages<CR>
+  autocmd FileType cs nnoremap <buffer> pi :OmniSharpPreviewImplementation<CR>
+  autocmd FileType cs nnoremap <buffer> <leader>rn :OmniSharpRename<CR>
+  autocmd FileType cs nnoremap <buffer> <leader>ca :OmniSharpCodeActions<CR>
+  autocmd FileType cs nnoremap <buffer> <leader>fm :OmniSharpCodeFormat<CR>
+  autocmd FileType cs nnoremap <buffer> K :OmniSharpDocumentation<CR>
+  autocmd FileType cs nnoremap <buffer> <leader>os :OmniSharpStatus<CR>
+augroup END
+
 " =============================================================================
 " ALE (LINTING)
 " =============================================================================
@@ -251,6 +283,43 @@ let g:ale_linters = { 'cs': ['OmniSharp'] }
 let g:airline_theme = 'codedark'
 
 " =============================================================================
+" CUSTOM TABLINE WITH TAB NAMING
+" =============================================================================
+" Command to rename current tab
+command! -nargs=1 TabName let t:tab_name = <q-args> | redrawtabline
+" Command to clear tab name
+command! TabNameClear unlet! t:tab_name
+
+function! MyTabLine()
+  let s = ''
+  for i in range(tabpagenr('$'))
+    let tabnr = i + 1
+    let s .= '%' . tabnr . 'T'
+    let s .= (tabnr == tabpagenr() ? '%#TabLineSel#' : '%#TabLine#')
+    " Get custom name or fall back to filename
+    let buflist = tabpagebuflist(tabnr)
+    let winnr = tabpagewinnr(tabnr)
+    let name = gettabvar(tabnr, 'tab_name', fnamemodify(bufname(buflist[winnr - 1]), ':t'))
+    if name == ''
+      let name = '[No Name]'
+    endif
+    let s .= ' ' . tabnr . ':' . name . ' '
+  endfor
+  let s .= '%#TabLineFill#%T'
+  return s
+endfunction
+
+set showtabline=1
+set tabline=%!MyTabLine()
+
+" Tabline colors
+hi TabLineSel guibg=#0A7ACA guifg=#FFFFFF ctermbg=32 ctermfg=White
+
+" Tab keybindings
+nnoremap tt :tabnew<CR>
+nnoremap tr :TabName<Space>
+
+" =============================================================================
 " VIMSPECTOR (DEBUGGING)
 " =============================================================================
 " Ensure Python3 support for Vimspector
@@ -264,6 +333,86 @@ endif
 " Use Visual Studio-style keybindings (F5 to run, F9 to toggle breakpoint, etc.)
 let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
 
+" Attach to running .NET process by name
+function! AttachToDotnetProcess(process_name)
+  " Use PowerShell to get full process name (tasklist truncates to 25 chars)
+  let l:cmd = 'powershell -NoProfile -Command "Get-Process -Name ''' . a:process_name . ''' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Id"'
+  let l:output = system(l:cmd)
+  let l:pid = str2nr(substitute(l:output, '\n\|\r', '', 'g'))
+
+  if l:pid == 0
+    echo "Could not find process: " . a:process_name
+    return
+  endif
+
+  echo "Attaching to " . a:process_name . " (PID: " . l:pid . ")"
+  call vimspector#LaunchWithConfigurations({
+    \ "attach": {
+    \   "adapter": "netcoredbg",
+    \   "configuration": {
+    \     "request": "attach",
+    \     "processId": l:pid
+    \   }
+    \ }
+  \ })
+endfunction
+
+" Find .vimspector.json by searching upward from current file or cwd
+function! FindVimspectorFile()
+  let l:dir = expand('%:p:h')
+  if l:dir == ''
+    let l:dir = getcwd()
+  endif
+
+  " Search upward for .vimspector.json
+  while l:dir != '' && l:dir != '/'
+    let l:file = l:dir . '/.vimspector.json'
+    if filereadable(l:file)
+      return l:file
+    endif
+    " Go to parent directory
+    let l:parent = fnamemodify(l:dir, ':h')
+    if l:parent == l:dir
+      break
+    endif
+    let l:dir = l:parent
+  endwhile
+
+  return ''
+endfunction
+
+" Attach to .NET process using name from .vimspector.json
+function! AttachToDotnetFromVimspector()
+  let l:vimspector_file = FindVimspectorFile()
+  if l:vimspector_file == ''
+    echo "No .vimspector.json found in current directory or parents"
+    return
+  endif
+
+  " Read and parse JSON
+  let l:json = join(readfile(l:vimspector_file), '')
+  let l:config = json_decode(l:json)
+
+  " Get processName from attach configuration
+  if !has_key(l:config, 'configurations') || !has_key(l:config.configurations, 'attach')
+    echo "No 'attach' configuration found in .vimspector.json"
+    return
+  endif
+
+  let l:attach = l:config.configurations.attach
+  if !has_key(l:attach, 'processName')
+    echo "No 'processName' field in attach configuration"
+    return
+  endif
+
+  let l:process_name = l:attach.processName
+  echo "Found " . l:vimspector_file
+  call AttachToDotnetProcess(l:process_name)
+endfunction
+
+command! -nargs=1 AttachDotnet call AttachToDotnetProcess(<q-args>)
+command! AttachDotnetAuto call AttachToDotnetFromVimspector()
+
 " =============================================================================
 " VIM-DADBOD (DATABASE)
 " =============================================================================
@@ -273,9 +422,11 @@ let g:db_ui_save_location = expand('~/.db_ui_queries')
 let g:db_ui_execute_on_save = 0
 
 let g:dbs = {
-\ 'local_mysql': 'mysql://root:BestRock1234@172.27.208.1',
-\ 'local_sqlserver': 'sqlserver://sa:letmein@172.27.208.1/sqldb-jobtracker-dev-scus?encrypt=true&TrustServerCertificate=true',
-\ 'azure_dev': 'sqlserver://<username>:<password>@sql-jobtracker-dev-southcentralus.database.windows.net/sqldb-jobtracker-dev-scus',
+\ 'local_mysql': 'mysql://root:BestRock1234@localhost',
+\ 'RPC_PI5_mysql': 'mysql://root:BestRock1234@192.168.254.115:3306',
+\ 'aspire_mysql': 'mysql://root:BestRock1234@localhost:3307',
+\ 'local_sqlserver': 'sqlserver://sa:letmein@KORTEGO-ROG-001/sqldb-jobtracker-dev-scus',
+\ 'azure_dev': 'sqlserver://jtadmin:6PWXQFTFkDWbQJ@sql-jobtracker-dev-southcentralus.database.windows.net/sqldb-jobtracker-dev-scus',
 \ }
 
 " Safety nets for Windows weirdness
@@ -285,21 +436,6 @@ autocmd FileType dbout setlocal modifiable
 " Disable folding in Dadbod query results
 autocmd FileType dbout setlocal nofoldenable
 
-" Add left border with pipe character for SQL Server results
-function! s:AddLeftBorder()
-  if &filetype !=# 'dbout'
-    return
-  endif
-  if !exists('b:db') || b:db !~# 'sqlserver://'
-    return
-  endif
-  setlocal modifiable
-  silent! %s/^\(.\+\)$/| \1/e
-  normal! gg
-endfunction
-
-autocmd BufReadPost,BufWritePost * if &filetype ==# 'dbout' | call s:AddLeftBorder() | endif
-
 " =============================================================================
 " VIM-FERN (FILE EXPLORER)
 " =============================================================================
@@ -307,29 +443,14 @@ let g:fern#drawer_width = 30
 let g:fern#default_hidden = 1
 " let g:fern#renderer = "nerdfont"
 
-" Make fern-hijack use drawer mode for 'vim .'
+" Fern settings (vim-fern-hijack handles directory opening automatically)
 let g:fern#disable_drawer_hover_popup = 1
-let g:fern_hijack_drawer = 1
 
-augroup FernHijackDrawer
-  autocmd!
-  autocmd BufEnter * ++nested call s:hijack_directory()
-augroup END
-
-function! s:hijack_directory() abort
-  let path = expand('%:p')
-  if !isdirectory(path)
-    return
-  endif
-  bwipeout %
-  execute printf('Fern %s -drawer -toggle', fnameescape(path))
-endfunction
-
-" Toggle fern drawer at current file's directory
-nnoremap <silent> <leader>n :Fern %:h -drawer -toggle -reveal=%<CR>
+" Toggle fern drawer at current file's directory (falls back to cwd if no file)
+nnoremap <silent> <leader>n :execute 'Fern ' . fnameescape(expand('%:p:h') != '' ? expand('%:p:h') : getcwd()) . ' -drawer -toggle -reveal=%'<CR>
 
 " Open fern in current window (split mode)
-nnoremap <silent> <leader>N :Fern %:h -reveal=%<CR>
+nnoremap <silent> <leader>N :execute 'Fern ' . fnameescape(expand('%:p:h') != '' ? expand('%:p:h') : getcwd()) . ' -reveal=%'<CR>
 
 " Custom fern buffer mappings
 function! s:init_fern() abort
@@ -385,6 +506,25 @@ augroup FernMinimapFix
   autocmd FileType fern silent! MinimapClose
 augroup END
 
+" Disable CoC for fern buffers
+augroup FernCocFix
+  autocmd!
+  autocmd FileType fern let b:coc_enabled = 0
+augroup END
+
+" Override :Ex to use Fern instead of netrw
+function! s:FernEx(dir) abort
+  let l:dir = a:dir
+  if l:dir ==# ''
+    let l:dir = expand('%:p:h')
+  endif
+  if l:dir ==# ''
+    let l:dir = getcwd()
+  endif
+  execute 'Fern ' . fnameescape(l:dir) . ' -reveal=%'
+endfunction
+command! -nargs=? -complete=dir Ex call s:FernEx(<q-args>)
+
 " =============================================================================
 " MINIMAP
 " =============================================================================
@@ -420,20 +560,29 @@ command! -nargs=* Sp split <args> | wincmd j
 cabbrev vs Vs
 cabbrev sp Sp
 
+" Toggle invisibles with F2
+nnoremap <F2> :set list!<CR>
+
+" Use Ctrl-C in visual mode to copy to system clipboard
+vnoremap <C-c> "+y
+
 " -----------------------------------------------------------------------------
 " Vim cd-on-quit functionality
 " -----------------------------------------------------------------------------
 " Opt-in commands to quit and cd to current directory in the terminal
-let g:vim_cd_tmpfile = expand(empty($XDG_CONFIG_HOME) ? '$HOME/.config/vim/.lastd' : '$XDG_CONFIG_HOME/vim/.lastd')
-
-" Ensure directory exists
-call system('mkdir -p ' . shellescape(fnamemodify(g:vim_cd_tmpfile, ':h')))
+if has('win32') || has('win64')
+  let g:vim_cd_tmpfile = expand('~/.vim/lastdir')
+else
+  let g:vim_cd_tmpfile = expand(empty($XDG_CONFIG_HOME) ? '$HOME/.config/vim/.lastd' : '$XDG_CONFIG_HOME/vim/.lastd')
+  " Ensure directory exists (Unix only)
+  call system('mkdir -p ' . shellescape(fnamemodify(g:vim_cd_tmpfile, ':h')))
+endif
 
 " :Q - Quit and cd to current directory
-command! Q call writefile(['cd ' . shellescape(getcwd())], g:vim_cd_tmpfile) | quit
+command! Q call writefile([getcwd()], g:vim_cd_tmpfile) | quit
 
 " :Wq - Write, quit and cd to current directory
-command! Wq write | call writefile(['cd ' . shellescape(getcwd())], g:vim_cd_tmpfile) | quit
+command! Wq write | call writefile([getcwd()], g:vim_cd_tmpfile) | quit
 
 " :WQ - Alias for :Wq (handle common typo)
-command! WQ write | call writefile(['cd ' . shellescape(getcwd())], g:vim_cd_tmpfile) | quit
+command! WQ write | call writefile([getcwd()], g:vim_cd_tmpfile) | quit
