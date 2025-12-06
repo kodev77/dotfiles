@@ -120,9 +120,6 @@ Plug 'tomasiser/vim-code-dark'
 Plug 'godlygeek/tabular'
 Plug 'tpope/vim-vinegar'
 
-" Minimap
-Plug 'wfxr/minimap.vim'
-
 " Statusline
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -443,6 +440,17 @@ let g:fern#drawer_width = 30
 let g:fern#default_hidden = 1
 " let g:fern#renderer = "nerdfont"
 
+" Clean tree display (remove |, +, - characters)
+let g:fern#renderer#default#leading = '  '
+let g:fern#renderer#default#leaf_symbol = '  '
+let g:fern#renderer#default#collapsed_symbol = '▸ '
+let g:fern#renderer#default#expanded_symbol = '▾ '
+let g:fern#renderer#default#root_symbol = '~ '
+
+" Highlight Fern header (root directory) in gold
+highlight FernRootSymbol guifg=#FFAF00 ctermfg=214
+highlight FernRootText guifg=#FFAF00 ctermfg=214
+
 " Fern settings (vim-fern-hijack handles directory opening automatically)
 let g:fern#disable_drawer_hover_popup = 1
 
@@ -500,12 +508,6 @@ augroup fern-glyph-palette
   autocmd FileType fern call glyph_palette#apply()
 augroup END
 
-" Disable minimap in fern buffers
-augroup FernMinimapFix
-  autocmd!
-  autocmd FileType fern silent! MinimapClose
-augroup END
-
 " Disable CoC for fern buffers
 augroup FernCocFix
   autocmd!
@@ -525,31 +527,8 @@ function! s:FernEx(dir) abort
 endfunction
 command! -nargs=? -complete=dir Ex call s:FernEx(<q-args>)
 
-" =============================================================================
-" MINIMAP
-" =============================================================================
-let g:minimap_width = 10
-let g:minimap_auto_start = 0
-let g:minimap_auto_start_win_enter = 1
-let g:minimap_highlight_search = 1
-let g:minimap_highlight_range = 1
-let g:minimap_git_colors = 1
-
-" Do not auto-open minimap on diff windows or in fugitive buffers
-augroup MinimapFugitiveFix
-    au!
-    au BufWinEnter * call s:CloseMinimapInDiff()
-    au BufEnter fugitive://* silent! MinimapClose
-augroup END
-
-function! s:CloseMinimapInDiff()
-    if &diff && exists(':MinimapClose')
-        MinimapClose
-    endif
-endfunction
-
-" Clear search highlights (minimap + vim)
-nnoremap <silent> <leader>nh :nohlsearch<CR>:call minimap#vim#ClearColorSearch()<CR>
+" Clear search highlights
+nnoremap <silent> <leader>nh :nohlsearch<CR>
 
 " =============================================================================
 " CUSTOM COMMANDS & FUNCTIONS
