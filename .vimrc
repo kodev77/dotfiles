@@ -46,6 +46,8 @@ set backspace=indent,eol,start
 " Search
 set hlsearch
 set incsearch
+set ignorecase
+set smartcase
 
 " Windows/buffers
 set hidden
