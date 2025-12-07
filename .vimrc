@@ -147,7 +147,6 @@ let g:fzf_colors =
 Plug 'prabirshrestha/asyncomplete.vim'
 
 " Colorschemes
-Plug 'gruvbox-community/gruvbox'
 Plug 'tomasiser/vim-code-dark'
 
 " Utilities
