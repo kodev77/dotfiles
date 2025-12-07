@@ -10,6 +10,10 @@ if has('win32') || has('win64')
   set runtimepath^=~/.vim
   " OmniSharp server path for Windows
   let g:OmniSharp_server_path = 'C:/Tools/omnisharp-roslyn/OmniSharp.exe'
+  " Ripgrep config path (to ignore bin/obj folders)
+  let $RIPGREP_CONFIG_PATH = expand('~/.ripgreprc')
+  " Use ripgrep for fzf :Files command (respects .ripgreprc)
+  let $FZF_DEFAULT_COMMAND = 'rg --files'
 endif
 set encoding=utf-8
 scriptencoding utf-8
@@ -52,6 +56,7 @@ set splitright
 
 " Misc
 set mouse=a
+set clipboard=unnamed,unnamedplus
 set updatetime=1000
 set laststatus=2
 set noshowmode
@@ -97,6 +102,7 @@ Plug 'kristijanhusak/vim-dadbod-completion'
 
 " Git
 Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
 
 " C# / OmniSharp
 Plug 'OmniSharp/omnisharp-vim'
@@ -108,6 +114,32 @@ Plug 'dense-analysis/ale'
 " FZF (used as OmniSharp selector)
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+
+" FZF layout: use true buffer instead of popup
+let g:fzf_layout = { 'window': 'enew' }
+
+" FZF options: clean up UI and add keybindings
+let $FZF_DEFAULT_OPTS = '--no-separator --pointer=">" --marker=">" --no-scrollbar --multi --bind=ctrl-a:select-all,ctrl-d:deselect-all'
+
+" FZF selected line highlight (VS Code blue)
+highlight FzfSelected guibg=#0A7ACA guifg=#FFFFFF ctermbg=32 ctermfg=White
+
+" FZF colors: match codedark colorscheme
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'FzfSelected'],
+  \ 'bg+':     ['bg', 'FzfSelected'],
+  \ 'gutter':  ['bg', 'Normal'],
+  \ 'hl+':     ['fg', 'Keyword'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'border':  ['fg', 'VertSplit'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Keyword'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Comment'],
+  \ 'header':  ['fg', 'Comment'] }
 
 " Async completion (for OmniSharp)
 Plug 'prabirshrestha/asyncomplete.vim'
@@ -273,6 +305,27 @@ let g:ale_sign_style_error = '·'
 let g:ale_sign_style_warning = '·'
 
 let g:ale_linters = { 'cs': ['OmniSharp'] }
+
+" =============================================================================
+" VIM-GITGUTTER (GIT DIFF SIGNS)
+" =============================================================================
+let g:gitgutter_sign_added = '│'
+let g:gitgutter_sign_modified = '│'
+let g:gitgutter_sign_removed = '_'
+let g:gitgutter_sign_removed_first_line = '‾'
+let g:gitgutter_sign_modified_removed = '~'
+
+" Toggle gitgutter
+nnoremap <leader>gd :GitGutterToggle<CR>
+
+" Navigate between hunks
+nmap ]h <Plug>(GitGutterNextHunk)
+nmap [h <Plug>(GitGutterPrevHunk)
+
+" Hunk operations
+nmap <leader>hp <Plug>(GitGutterPreviewHunk)
+nmap <leader>hs <Plug>(GitGutterStageHunk)
+nmap <leader>hu <Plug>(GitGutterUndoHunk)
 
 " =============================================================================
 " VIM-AIRLINE (STATUSBAR)
@@ -531,6 +584,28 @@ command! -nargs=? -complete=dir Ex call s:FernEx(<q-args>)
 nnoremap <silent> <leader>nh :nohlsearch<CR>
 
 " =============================================================================
+" QUICKFIX WINDOW (VS Code-style left panel)
+" =============================================================================
+" Open quickfix vertically on the left
+augroup QuickfixPosition
+  autocmd!
+  autocmd FileType qf wincmd H | vertical resize 50
+augroup END
+
+" Open quickfix entries in right split (keep quickfix open)
+autocmd FileType qf nnoremap <buffer> <CR> <CR>:copen<CR>:wincmd H<CR>:vertical resize 50<CR>:wincmd l<CR>
+
+" Toggle quickfix window
+nnoremap <silent> <leader>q :call ToggleQuickfix()<CR>
+function! ToggleQuickfix()
+  if getqflist({'winid': 0}).winid
+    cclose
+  else
+    copen
+  endif
+endfunction
+
+" =============================================================================
 " CUSTOM COMMANDS & FUNCTIONS
 " =============================================================================
 " Split commands that move cursor to new window
@@ -544,6 +619,12 @@ nnoremap <F2> :set list!<CR>
 
 " Use Ctrl-C in visual mode to copy to system clipboard
 vnoremap <C-c> "+y
+
+" Ctrl-V paste from system clipboard (all modes)
+nnoremap <C-v> "+p
+vnoremap <C-v> "+p
+inoremap <C-v> <C-r>+
+cnoremap <C-v> <C-r>+
 
 " -----------------------------------------------------------------------------
 " Vim cd-on-quit functionality

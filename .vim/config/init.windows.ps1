@@ -41,6 +41,14 @@ if (!(Get-Command rg -ErrorAction SilentlyContinue)) {
     Write-Host "ripgrep already installed" -ForegroundColor Green
 }
 
+# bat (syntax highlighting for fzf preview)
+if (!(Get-Command bat -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing bat..." -ForegroundColor Yellow
+    choco install bat -y
+} else {
+    Write-Host "bat already installed" -ForegroundColor Green
+}
+
 # code-minimap (for minimap.vim plugin)
 if (!(Get-Command code-minimap -ErrorAction SilentlyContinue)) {
     Write-Host "Installing code-minimap..." -ForegroundColor Yellow
@@ -282,6 +290,7 @@ Write-Host "Installed tools:" -ForegroundColor Cyan
 Write-Host "  - Node.js: $(node -v 2>$null)" -ForegroundColor White
 Write-Host "  - fzf: $(fzf --version 2>$null)" -ForegroundColor White
 Write-Host "  - ripgrep: $(rg --version 2>$null | Select-Object -First 1)" -ForegroundColor White
+Write-Host "  - bat: $(bat --version 2>$null | Select-Object -First 1)" -ForegroundColor White
 Write-Host "  - dotnet: $(dotnet --version 2>$null)" -ForegroundColor White
 Write-Host "  - sqlcmd: $(if (Get-Command sqlcmd -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
 Write-Host "  - mysql: $(if (Get-Command mysql -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
