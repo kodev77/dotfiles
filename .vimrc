@@ -81,15 +81,6 @@ let s:using_snippets = 0
 
 call plug#begin('~/.vim/plugged')
 
-" File explorer (vim-fern)
-Plug 'lambdalisue/vim-fern'
-Plug 'lambdalisue/vim-fern-git-status'
-Plug 'lambdalisue/vim-fern-hijack'
-
-" Nerd Font support for fern
-Plug 'lambdalisue/vim-nerdfont'
-Plug 'lambdalisue/vim-fern-renderer-nerdfont'
-Plug 'lambdalisue/glyph-palette.vim'
 
 " Debugging
 Plug 'puremourning/vimspector'
@@ -151,7 +142,6 @@ Plug 'tomasiser/vim-code-dark'
 
 " Utilities
 Plug 'godlygeek/tabular'
-Plug 'tpope/vim-vinegar'
 
 " Statusline
 Plug 'vim-airline/vim-airline'
@@ -486,100 +476,6 @@ autocmd FileType dbout setlocal modifiable
 
 " Disable folding in Dadbod query results
 autocmd FileType dbout setlocal nofoldenable
-
-" =============================================================================
-" VIM-FERN (FILE EXPLORER)
-" =============================================================================
-let g:fern#drawer_width = 30
-let g:fern#default_hidden = 1
-" let g:fern#renderer = "nerdfont"
-
-" Clean tree display (remove |, +, - characters)
-let g:fern#renderer#default#leading = '  '
-let g:fern#renderer#default#leaf_symbol = '  '
-let g:fern#renderer#default#collapsed_symbol = '▸ '
-let g:fern#renderer#default#expanded_symbol = '▾ '
-let g:fern#renderer#default#root_symbol = '~ '
-
-" Highlight Fern header (root directory) in gold
-highlight FernRootSymbol guifg=#FFAF00 ctermfg=214
-highlight FernRootText guifg=#FFAF00 ctermfg=214
-
-" Fern settings (vim-fern-hijack handles directory opening automatically)
-let g:fern#disable_drawer_hover_popup = 1
-
-" Toggle fern drawer at current file's directory (falls back to cwd if no file)
-nnoremap <silent> <leader>n :execute 'Fern ' . fnameescape(expand('%:p:h') != '' ? expand('%:p:h') : getcwd()) . ' -drawer -toggle -reveal=%'<CR>
-
-" Open fern in current window (split mode)
-nnoremap <silent> <leader>N :execute 'Fern ' . fnameescape(expand('%:p:h') != '' ? expand('%:p:h') : getcwd()) . ' -reveal=%'<CR>
-
-" Custom fern buffer mappings
-function! s:init_fern() abort
-  " Navigation
-  nmap <buffer><expr> <CR> fern#smart#leaf(
-        \ "\<Plug>(fern-action-open)",
-        \ "\<Plug>(fern-action-enter)",
-        \ )
-  nmap <buffer> - <Plug>(fern-action-leave)
-  nmap <buffer> l <Plug>(fern-action-expand)
-  nmap <buffer> h <Plug>(fern-action-collapse)
-
-  " File operations
-  nmap <buffer> e <Plug>(fern-action-open)
-  nmap <buffer> s <Plug>(fern-action-open:split)
-  nmap <buffer> v <Plug>(fern-action-open:vsplit)
-  nmap <buffer> t <Plug>(fern-action-open:tabedit)
-
-  " File management
-  nmap <buffer> N <Plug>(fern-action-new-file)
-  nmap <buffer> K <Plug>(fern-action-new-dir)
-  nmap <buffer> R <Plug>(fern-action-rename)
-  nmap <buffer> D <Plug>(fern-action-remove)
-  nmap <buffer> c <Plug>(fern-action-clipboard-copy)
-  nmap <buffer> x <Plug>(fern-action-clipboard-move)
-  nmap <buffer> p <Plug>(fern-action-clipboard-paste)
-
-  " Mark operations
-  nmap <buffer> m <Plug>(fern-action-mark:toggle)
-  nmap <buffer> <Space>m <Plug>(fern-action-mark:clear)
-
-  " Utility
-  nmap <buffer> r <Plug>(fern-action-reload)
-  nmap <buffer> . <Plug>(fern-action-hidden:toggle)
-  nmap <buffer> y <Plug>(fern-action-yank:path)
-  nmap <buffer> ? <Plug>(fern-action-help)
-endfunction
-
-augroup fern-custom
-  autocmd!
-  autocmd FileType fern call s:init_fern()
-augroup END
-
-" Apply glyph palette colors for file icons
-augroup fern-glyph-palette
-  autocmd!
-  autocmd FileType fern call glyph_palette#apply()
-augroup END
-
-" Disable CoC for fern buffers
-augroup FernCocFix
-  autocmd!
-  autocmd FileType fern let b:coc_enabled = 0
-augroup END
-
-" Override :Ex to use Fern instead of netrw
-function! s:FernEx(dir) abort
-  let l:dir = a:dir
-  if l:dir ==# ''
-    let l:dir = expand('%:p:h')
-  endif
-  if l:dir ==# ''
-    let l:dir = getcwd()
-  endif
-  execute 'Fern ' . fnameescape(l:dir) . ' -reveal=%'
-endfunction
-command! -nargs=? -complete=dir Ex call s:FernEx(<q-args>)
 
 " Clear search highlights
 nnoremap <silent> <leader>nh :nohlsearch<CR>
