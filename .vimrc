@@ -142,6 +142,7 @@ Plug 'tomasiser/vim-code-dark'
 
 " Utilities
 Plug 'godlygeek/tabular'
+Plug 'vifm/vifm.vim'
 
 " Statusline
 Plug 'vim-airline/vim-airline'

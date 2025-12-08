@@ -81,6 +81,14 @@ if (!(Get-Command mysql -ErrorAction SilentlyContinue)) {
     Write-Host "MySQL client already installed" -ForegroundColor Green
 }
 
+# vifm (vim-like file manager)
+if (!(Get-Command vifm -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing vifm..." -ForegroundColor Yellow
+    choco install vifm -y
+} else {
+    Write-Host "vifm already installed" -ForegroundColor Green
+}
+
 # =============================================================================
 # Vimspector netcoredbg Installation (for .NET debugging)
 # =============================================================================
@@ -278,6 +286,35 @@ if ($userPath -notlike "*$toolsDir*") {
 } else {
     Write-Host "tools directory already in PATH" -ForegroundColor Green
 }
+
+# =============================================================================
+# vifm Configuration
+# =============================================================================
+
+Write-Host ""
+Write-Host "Setting up vifm configuration..." -ForegroundColor Cyan
+
+$vifmConfigDir = "$env:USERPROFILE\.config\vifm"
+$vifmrcPath = "$vifmConfigDir\vifmrc"
+
+if (!(Test-Path $vifmConfigDir)) {
+    New-Item -ItemType Directory -Path $vifmConfigDir -Force | Out-Null
+    Write-Host "Created vifm config directory: $vifmConfigDir" -ForegroundColor Green
+}
+
+$vifmrcContent = @'
+" Use vim as editor
+set vicmd="C:\Program Files\Vim\vim91\vim.exe"
+
+" Show line numbers
+set number
+
+" Use Windows default associations for files
+filetype * start
+'@
+
+Set-Content -Path $vifmrcPath -Value $vifmrcContent -Encoding ASCII
+Write-Host "Created vifm config: $vifmrcPath" -ForegroundColor Green
 
 # =============================================================================
 # Summary
