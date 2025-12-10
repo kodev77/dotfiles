@@ -1,4 +1,4 @@
-" =============================================================================
+"==============================================================================
 " GENERAL SETTINGS
 " =============================================================================
 let mapleader = " "
@@ -23,7 +23,8 @@ set number
 set showcmd
 set scrolloff=10
 set title
-set signcolumn=yes
+set signcolumn=auto
+set nowrap
 syntax on
 filetype indent plugin on
 
@@ -66,6 +67,20 @@ set noruler
 
 " Netrw
 let g:netrw_keepdir = 0
+let g:netrw_browse_split = 0
+
+" Netrw: <leader>e opens file in main buffer (window 2)
+function! NetrwOpenInMainBuffer()
+  let curfile = b:netrw_curdir . '/' . netrw#Call('NetrwGetWord')
+  " Go to window 2 (first window right of Netrw)
+  2wincmd w
+  execute 'edit ' . fnameescape(curfile)
+endfunction
+
+augroup netrw_mappings
+  autocmd!
+  autocmd FileType netrw nmap <buffer> <leader>e :call NetrwOpenInMainBuffer()<CR>
+augroup END
 
 " Show invisibles (Notepad++-style)
 set listchars=tab:→-,space:·,trail:·,nbsp:⍽,eol:¶,extends:›,precedes:‹
@@ -114,16 +129,10 @@ let g:fzf_layout = { 'window': 'enew' }
 " FZF options: clean up UI and add keybindings
 let $FZF_DEFAULT_OPTS = '--no-separator --pointer=">" --marker=">" --no-scrollbar --multi --bind=ctrl-a:select-all,ctrl-d:deselect-all'
 
-" FZF selected line highlight (VS Code blue)
-highlight FzfSelected guibg=#0A7ACA guifg=#FFFFFF ctermbg=32 ctermfg=White
-
-" FZF colors: match codedark colorscheme
+" FZF colors: use Vim highlight groups
 let g:fzf_colors =
 \ { 'fg':      ['fg', 'Normal'],
-  \ 'bg':      ['bg', 'Normal'],
-  \ 'hl':      ['fg', 'Comment'],
-  \ 'fg+':     ['fg', 'FzfSelected'],
-  \ 'bg+':     ['bg', 'FzfSelected'],
+  \ 'bg+':     ['bg', 'CursorLine'],
   \ 'gutter':  ['bg', 'Normal'],
   \ 'hl+':     ['fg', 'Keyword'],
   \ 'info':    ['fg', 'PreProc'],
@@ -138,7 +147,7 @@ let g:fzf_colors =
 Plug 'prabirshrestha/asyncomplete.vim'
 
 " Colorschemes
-Plug 'tomasiser/vim-code-dark'
+" (using default Vim colorscheme)
 
 " Utilities
 Plug 'godlygeek/tabular'
@@ -155,6 +164,9 @@ endif
 
 call plug#end()
 
+" Set colorscheme
+colorscheme koehler
+
 " =============================================================================
 " COLORSCHEME & HIGHLIGHTS
 " =============================================================================
@@ -169,12 +181,6 @@ augroup ColorschemePreferences
   autocmd ColorScheme * highlight link ALEWarningSign ModeMsg
   autocmd ColorScheme * highlight link ALEInfoSign    Identifier
 augroup END
-
-colorscheme codedark
-
-" Fix dadbod-ui command line readability
-highlight Question guifg=#ebdbb2 guibg=#1d2021 ctermfg=223 ctermbg=234
-highlight MoreMsg guifg=#ebdbb2 guibg=#1d2021 ctermfg=223 ctermbg=234
 
 " =============================================================================
 " COC.NVIM CONFIGURATION
@@ -322,7 +328,7 @@ nmap <leader>hu <Plug>(GitGutterUndoHunk)
 " =============================================================================
 " VIM-AIRLINE (STATUSBAR)
 " =============================================================================
-let g:airline_theme = 'codedark'
+" Using default airline theme
 
 " =============================================================================
 " CUSTOM TABLINE WITH TAB NAMING
@@ -354,12 +360,12 @@ endfunction
 set showtabline=1
 set tabline=%!MyTabLine()
 
-" Tabline colors
-hi TabLineSel guibg=#0A7ACA guifg=#FFFFFF ctermbg=32 ctermfg=White
-
 " Tab keybindings
-nnoremap tt :tabnew<CR>
-nnoremap tr :TabName<Space>
+nnoremap <leader>tt :tabnew<CR>
+nnoremap <leader>tn :tabnext<CR>
+nnoremap <leader>tp :tabprev<CR>
+nnoremap <leader>tc :tabclose<CR>
+nnoremap <leader>tr :TabName<Space>
 
 " =============================================================================
 " VIMSPECTOR (DEBUGGING)
@@ -464,9 +470,9 @@ let g:db_ui_save_location = expand('~/.db_ui_queries')
 let g:db_ui_execute_on_save = 0
 
 let g:dbs = {
-\ 'local_mysql': 'mysql://root:BestRock1234@localhost',
+\ 'local_mysql': 'mysql://root:BestRock1234@localhost/sqldb-jobtracker-dev-scus',
 \ 'RPC_PI5_mysql': 'mysql://root:BestRock1234@192.168.254.115:3306',
-\ 'aspire_mysql': 'mysql://root:BestRock1234@localhost:3307',
+\ 'aspire_mysql': 'mysql://root:BestRock1234@localhost:3307/sqldb-jobtracker-dev-scus',
 \ 'local_sqlserver': 'sqlserver://sa:letmein@KORTEGO-ROG-001/sqldb-jobtracker-dev-scus',
 \ 'azure_dev': 'sqlserver://jtadmin:6PWXQFTFkDWbQJ@sql-jobtracker-dev-southcentralus.database.windows.net/sqldb-jobtracker-dev-scus',
 \ }
@@ -480,6 +486,22 @@ autocmd FileType dbout setlocal nofoldenable
 
 " Clear search highlights
 nnoremap <silent> <leader>nh :nohlsearch<CR>
+
+" -----------------------------------------------------------------------------
+" Black hole delete mappings (preserves clipboard)
+" -----------------------------------------------------------------------------
+" Use <leader>d to delete without affecting clipboard/registers
+nnoremap <leader>d "_d
+nnoremap <leader>dd "_dd
+nnoremap <leader>D "_D
+vnoremap <leader>d "_d
+xnoremap <leader>d "_d
+
+" Use <leader>p to paste from system clipboard (ignores Vim registers)
+nnoremap <leader>p "+p
+nnoremap <leader>P "+P
+vnoremap <leader>p "+p
+xnoremap <leader>p "+p
 
 " =============================================================================
 " QUICKFIX WINDOW (VS Code-style left panel)
@@ -512,6 +534,9 @@ command! -nargs=* Sp split <args> | wincmd j
 cabbrev vs Vs
 cabbrev sp Sp
 
+" Resize current window to 80% of screen width (useful for netrw)
+nnoremap <leader>vr :execute 'vertical resize ' . float2nr(&columns * 0.8)<CR>
+
 " Toggle invisibles with F2
 nnoremap <F2> :set list!<CR>
 
@@ -528,6 +553,15 @@ cnoremap <C-v> <C-r>+
 " Vim cd-on-quit functionality
 " -----------------------------------------------------------------------------
 " Opt-in commands to quit and cd to current directory in the terminal
+if has('win32') || has('win64')
+  let g:vim_cd_tmpfile = expand('~/.vim/lastdir')
+else
+  let g:vim_cd_tmpfile = expand(empty($XDG_CONFIG_HOME) ? '$HOME/.config/vim/.lastd' : '$XDG_CONFIG_HOME/vim/.lastd')
+  " Ensure directory exists (Unix only)
+  call system('mkdir -p ' . shellescape(fnamemodify(g:vim_cd_tmpfile, ':h')))
+endif
+
+" :Q - Quit and cd to current directory
 if has('win32') || has('win64')
   let g:vim_cd_tmpfile = expand('~/.vim/lastdir')
 else
