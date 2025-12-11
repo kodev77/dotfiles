@@ -15,6 +15,10 @@ if has('win32') || has('win64')
   " Use ripgrep for fzf :Files command (respects .ripgreprc)
   let $FZF_DEFAULT_COMMAND = 'rg --files'
 endif
+
+" Disable swap files (prevents .swp clutter and recovery prompts)
+set noswapfile
+
 set encoding=utf-8
 scriptencoding utf-8
 
@@ -362,10 +366,31 @@ set tabline=%!MyTabLine()
 
 " Tab keybindings
 nnoremap <leader>tt :tabnew<CR>
-nnoremap <leader>tn :tabnext<CR>
-nnoremap <leader>tp :tabprev<CR>
-nnoremap <leader>tc :tabclose<CR>
 nnoremap <leader>tr :TabName<Space>
+
+" Tab navigation: <leader>{n} for direct tab access
+nnoremap <leader>1 1gt
+nnoremap <leader>2 2gt
+nnoremap <leader>3 3gt
+nnoremap <leader>4 4gt
+nnoremap <leader>5 5gt
+nnoremap <leader>6 6gt
+nnoremap <leader>7 7gt
+nnoremap <leader>8 8gt
+nnoremap <leader>9 9gt
+
+" Terminal mode: same mappings
+tnoremap <leader>gt <C-\><C-n>gt
+tnoremap <leader>gT <C-\><C-n>gT
+tnoremap <leader>1 <C-\><C-n>1gt
+tnoremap <leader>2 <C-\><C-n>2gt
+tnoremap <leader>3 <C-\><C-n>3gt
+tnoremap <leader>4 <C-\><C-n>4gt
+tnoremap <leader>5 <C-\><C-n>5gt
+tnoremap <leader>6 <C-\><C-n>6gt
+tnoremap <leader>7 <C-\><C-n>7gt
+tnoremap <leader>8 <C-\><C-n>8gt
+tnoremap <leader>9 <C-\><C-n>9gt
 
 " =============================================================================
 " VIMSPECTOR (DEBUGGING)

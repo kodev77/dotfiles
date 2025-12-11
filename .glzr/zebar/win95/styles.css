@@ -1,0 +1,233 @@
+/**
+ * Windows 95/98 Theme
+ * Classic gray with beveled buttons
+ */
+
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --text-size: 12px;
+  --icon-size: 12px;
+
+  /* Windows 95 Color Palette */
+  --win95-gray: #C0C0C0;
+  --win95-dark-gray: #808080;
+  --win95-light: #FFFFFF;
+  --win95-dark: #000000;
+  --win95-navy: #000080;
+  --win95-teal: #008080;
+  --win95-silver: #DFDFDF;
+  --win95-red: #FF0000;
+  --win95-green: #008000;
+
+  /* Beveled border colors */
+  --bevel-light: #FFFFFF;
+  --bevel-dark: #808080;
+  --bevel-darker: #404040;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'MS Sans Serif', 'Segoe UI', 'Tahoma', sans-serif;
+  font-size: var(--text-size);
+  color: var(--win95-dark);
+  overflow: hidden;
+}
+
+#root {
+  background: var(--win95-gray);
+  border-top: 2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-dark);
+}
+
+div,
+span,
+p {
+  cursor: default;
+  user-select: none;
+}
+
+i {
+  margin-right: 4px;
+  font-size: var(--icon-size);
+  color: var(--win95-dark);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 2px 4px;
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.center {
+  justify-self: center;
+}
+
+.right {
+  justify-self: end;
+}
+
+/* Start button style logo */
+.logo {
+  margin-right: 8px;
+  padding: 2px 6px;
+  background: var(--win95-gray);
+  color: var(--win95-dark);
+  font-weight: bold;
+  font-size: 11px;
+  border-top: 2px solid var(--bevel-light);
+  border-left: 2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-darker);
+  border-right: 2px solid var(--bevel-darker);
+}
+
+.logo:active {
+  border-top: 2px solid var(--bevel-darker);
+  border-left: 2px solid var(--bevel-darker);
+  border-bottom: 2px solid var(--bevel-light);
+  border-right: 2px solid var(--bevel-light);
+}
+
+/* Workspaces - taskbar button style */
+.workspaces {
+  display: flex;
+  align-items: center;
+}
+
+.workspace {
+  background: var(--win95-gray);
+  margin-right: 2px;
+  padding: 2px 8px;
+  color: var(--win95-dark);
+  font-family: inherit;
+  font-size: var(--text-size);
+  cursor: pointer;
+  border-top: 2px solid var(--bevel-light);
+  border-left: 2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-darker);
+  border-right: 2px solid var(--bevel-darker);
+
+  &.displayed {
+    background: var(--win95-silver);
+  }
+
+  &.focused {
+    background: var(--win95-navy);
+    color: var(--win95-light);
+    border-top: 2px solid var(--bevel-darker);
+    border-left: 2px solid var(--bevel-darker);
+    border-bottom: 2px solid var(--bevel-light);
+    border-right: 2px solid var(--bevel-light);
+  }
+
+  &:hover {
+    background: var(--win95-silver);
+  }
+
+  &:active {
+    border-top: 2px solid var(--bevel-darker);
+    border-left: 2px solid var(--bevel-darker);
+    border-bottom: 2px solid var(--bevel-light);
+    border-right: 2px solid var(--bevel-light);
+  }
+}
+
+/* Buttons */
+.binding-mode,
+.tiling-direction,
+.paused-button {
+  background: var(--win95-gray);
+  color: var(--win95-dark);
+  padding: 2px 6px;
+  margin-right: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+  border-top: 2px solid var(--bevel-light);
+  border-left: 2px solid var(--bevel-light);
+  border-bottom: 2px solid var(--bevel-darker);
+  border-right: 2px solid var(--bevel-darker);
+}
+
+.binding-mode {
+  background: var(--win95-navy);
+  color: var(--win95-light);
+}
+
+.paused-button {
+  background: var(--win95-red);
+  color: var(--win95-light);
+}
+
+/* System tray style - sunken area */
+.right {
+  background: var(--win95-gray);
+  padding: 2px 8px;
+  border-top: 2px solid var(--bevel-dark);
+  border-left: 2px solid var(--bevel-dark);
+  border-bottom: 2px solid var(--bevel-light);
+  border-right: 2px solid var(--bevel-light);
+}
+
+.network,
+.memory,
+.cpu,
+.battery,
+.weather {
+  margin-left: 12px;
+  color: var(--win95-dark);
+  font-size: 11px;
+}
+
+.network i,
+.memory i,
+.cpu i,
+.battery i {
+  color: var(--win95-teal);
+}
+
+.cpu .high-usage {
+  color: var(--win95-red);
+  font-weight: bold;
+}
+
+/* Battery */
+.battery {
+  position: relative;
+}
+
+.battery .charging-icon {
+  position: absolute;
+  font-size: 7px;
+  left: -7px;
+  top: 2px;
+  color: var(--win95-green);
+}
+
+/* Date/time - classic clock style */
+.center {
+  color: var(--win95-dark);
+  font-size: 11px;
+  padding: 2px 8px;
+  background: var(--win95-gray);
+  border-top: 2px solid var(--bevel-dark);
+  border-left: 2px solid var(--bevel-dark);
+  border-bottom: 2px solid var(--bevel-light);
+  border-right: 2px solid var(--bevel-light);
+}

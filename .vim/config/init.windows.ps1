@@ -89,6 +89,22 @@ if (!(Get-Command vifm -ErrorAction SilentlyContinue)) {
     Write-Host "vifm already installed" -ForegroundColor Green
 }
 
+# GlazeWM (tiling window manager)
+if (!(Get-Command glazewm -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing GlazeWM..." -ForegroundColor Yellow
+    choco install glazewm -y
+} else {
+    Write-Host "GlazeWM already installed" -ForegroundColor Green
+}
+
+# Zebar (status bar for GlazeWM)
+if (!(Get-Command zebar -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing Zebar..." -ForegroundColor Yellow
+    choco install zebar -y
+} else {
+    Write-Host "Zebar already installed" -ForegroundColor Green
+}
+
 # =============================================================================
 # Vimspector netcoredbg Installation (for .NET debugging)
 # =============================================================================
@@ -226,6 +242,36 @@ New-Item -ItemType SymbolicLink -Path $vimdirLink -Target $vimdirTarget
 Write-Host "Symlinks created!" -ForegroundColor Green
 
 # =============================================================================
+# GlazeWM Configuration Symlink
+# =============================================================================
+
+Write-Host ""
+Write-Host "Setting up GlazeWM configuration..." -ForegroundColor Cyan
+
+$glzrTarget = "$env:USERPROFILE\repo\dotfiles\.glzr"
+$glzrLink = "$env:USERPROFILE\.glzr"
+
+# Handle existing .glzr directory
+if (Test-Path $glzrLink) {
+    if (Test-Symlink $glzrLink) {
+        Write-Host ".glzr is already a symlink, removing..." -ForegroundColor Yellow
+        (Get-Item $glzrLink).Delete()
+    } else {
+        Write-Host "Backing up existing .glzr directory..." -ForegroundColor Yellow
+        $backupPath = "$env:USERPROFILE\.glzr.backup"
+        if (Test-Path $backupPath) {
+            Remove-Item $backupPath -Recurse -Force
+        }
+        Move-Item $glzrLink $backupPath
+        Write-Host "  Backed up to $backupPath" -ForegroundColor Gray
+    }
+}
+
+# Create symlink for .glzr
+New-Item -ItemType SymbolicLink -Path $glzrLink -Target $glzrTarget
+Write-Host "GlazeWM config symlink created!" -ForegroundColor Green
+
+# =============================================================================
 # vim-plug Installation
 # =============================================================================
 
@@ -332,6 +378,8 @@ Write-Host "  - dotnet: $(dotnet --version 2>$null)" -ForegroundColor White
 Write-Host "  - sqlcmd: $(if (Get-Command sqlcmd -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
 Write-Host "  - mysql: $(if (Get-Command mysql -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
 Write-Host "  - netcoredbg: $(if (Test-Path $netcoredbgExe) { 'installed' } else { 'not found' })" -ForegroundColor White
+Write-Host "  - glazewm: $(if (Get-Command glazewm -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
+Write-Host "  - zebar: $(if (Get-Command zebar -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
 Write-Host "Shell wrappers:" -ForegroundColor Cyan
 Write-Host "  - vim.bat: $vimBatPath" -ForegroundColor White
 Write-Host "  - tools in PATH: $(if ($userPath -like "*$toolsDir*") { 'yes' } else { 'added (restart terminal)' })" -ForegroundColor White
@@ -340,6 +388,17 @@ Write-Host "Next steps:" -ForegroundColor Yellow
 Write-Host "  1. Restart your terminal (for PATH changes)" -ForegroundColor White
 Write-Host "  2. Open Vim and run :PlugInstall" -ForegroundColor White
 Write-Host "  3. Run :CocInstall coc-json coc-sql" -ForegroundColor White
+Write-Host "  4. Run 'glazewm start' to launch the window manager" -ForegroundColor White
 Write-Host ""
 Write-Host "Note: Use :Q to quit vim and cd to current directory" -ForegroundColor Cyan
 Write-Host "      Use :q to quit vim without changing directory" -ForegroundColor Cyan
+Write-Host ""
+Write-Host "GlazeWM keybindings:" -ForegroundColor Cyan
+Write-Host "  Alt+H/J/K/L     - Focus window left/down/up/right" -ForegroundColor White
+Write-Host "  Alt+Shift+H/J/K/L - Move window" -ForegroundColor White
+Write-Host "  Alt+1-9         - Switch workspace" -ForegroundColor White
+Write-Host "  Alt+Shift+1-9   - Move window to workspace" -ForegroundColor White
+Write-Host "  Alt+Enter       - Open terminal" -ForegroundColor White
+Write-Host "  Alt+Q           - Close window" -ForegroundColor White
+Write-Host "  Alt+R           - Resize mode (HJKL to resize, Esc to exit)" -ForegroundColor White
+Write-Host "  Alt+Shift+R     - Reload config" -ForegroundColor White

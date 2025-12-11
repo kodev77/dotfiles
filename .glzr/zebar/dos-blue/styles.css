@@ -1,0 +1,193 @@
+/**
+ * DOS/BIOS Blue Theme
+ * Classic blue background with white/yellow text
+ */
+
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --text-size: 13px;
+  --icon-size: 12px;
+
+  /* DOS/BIOS Colors */
+  --dos-blue: #0000AA;
+  --dos-blue-light: #0000CC;
+  --dos-white: #AAAAAA;
+  --dos-white-bright: #FFFFFF;
+  --dos-yellow: #FFFF55;
+  --dos-cyan: #55FFFF;
+  --dos-red: #FF5555;
+  --dos-gray: #555555;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Consolas', 'Courier New', 'Perfect DOS VGA 437', monospace;
+  font-size: var(--text-size);
+  color: var(--dos-white-bright);
+  overflow: hidden;
+  letter-spacing: 0px;
+}
+
+#root {
+  background: var(--dos-blue);
+  border-bottom: 2px solid var(--dos-cyan);
+}
+
+div,
+span,
+p {
+  cursor: default;
+  user-select: none;
+}
+
+i {
+  margin-right: 5px;
+  font-size: var(--icon-size);
+  color: var(--dos-yellow);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 4px 12px;
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.center {
+  justify-self: center;
+}
+
+.right {
+  justify-self: end;
+}
+
+/* Logo */
+.logo {
+  margin-right: 12px;
+  color: var(--dos-yellow);
+  font-weight: bold;
+}
+
+/* Workspaces */
+.workspaces {
+  display: flex;
+  align-items: center;
+}
+
+.workspace {
+  background: var(--dos-blue);
+  margin-right: 2px;
+  padding: 2px 8px;
+  color: var(--dos-white);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+
+  &.displayed {
+    color: var(--dos-white-bright);
+  }
+
+  &.focused {
+    color: var(--dos-blue);
+    background: var(--dos-cyan);
+    font-weight: bold;
+  }
+
+  &:hover {
+    color: var(--dos-blue);
+    background: var(--dos-white);
+  }
+}
+
+/* Binding mode and buttons */
+.binding-mode,
+.tiling-direction,
+.paused-button {
+  background: var(--dos-gray);
+  color: var(--dos-white-bright);
+  border: none;
+  padding: 2px 8px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+}
+
+.binding-mode {
+  margin-right: 4px;
+  background: var(--dos-red);
+  color: var(--dos-white-bright);
+}
+
+.tiling-direction {
+  background: var(--dos-blue-light);
+  border: 1px solid var(--dos-cyan);
+}
+
+.paused-button {
+  background: var(--dos-red);
+  animation: blink-dos 0.5s step-end infinite;
+}
+
+@keyframes blink-dos {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+/* Right side items */
+.network,
+.memory,
+.cpu,
+.battery,
+.weather {
+  margin-left: 16px;
+  color: var(--dos-white-bright);
+}
+
+.network i,
+.memory i,
+.cpu i,
+.battery i {
+  color: var(--dos-yellow);
+}
+
+.cpu .high-usage {
+  color: var(--dos-red);
+  font-weight: bold;
+}
+
+/* Battery */
+.battery {
+  position: relative;
+}
+
+.battery .charging-icon {
+  position: absolute;
+  font-size: 7px;
+  left: -8px;
+  top: 3px;
+  color: var(--dos-yellow);
+}
+
+/* Date/time in center */
+.center {
+  color: var(--dos-yellow);
+  font-weight: bold;
+}

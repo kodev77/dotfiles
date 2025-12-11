@@ -1,0 +1,196 @@
+/**
+ * Commodore 64 Theme
+ * Classic blue/purple with light blue text
+ */
+
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --text-size: 14px;
+  --icon-size: 13px;
+
+  /* Authentic C64 Color Palette */
+  --c64-blue: #4040E0;
+  --c64-light-blue: #7878FF;
+  --c64-white: #FFFFFF;
+  --c64-light-gray: #ADADAD;
+  --c64-dark-gray: #6C6C6C;
+  --c64-purple: #8040E0;
+  --c64-red: #E04040;
+  --c64-green: #40E040;
+  --c64-brown: #9C6844;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Consolas', 'C64 Pro Mono', 'Courier New', monospace;
+  font-size: var(--text-size);
+  color: var(--c64-light-blue);
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#root {
+  background: var(--c64-blue);
+  border-bottom: 3px solid var(--c64-light-blue);
+}
+
+div,
+span,
+p {
+  cursor: default;
+  user-select: none;
+}
+
+i {
+  margin-right: 5px;
+  font-size: var(--icon-size);
+  color: var(--c64-light-blue);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 4px 12px;
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.center {
+  justify-self: center;
+}
+
+.right {
+  justify-self: end;
+}
+
+/* Logo */
+.logo {
+  margin-right: 12px;
+  color: var(--c64-white);
+  font-weight: bold;
+  font-size: 13px;
+}
+
+/* Workspaces */
+.workspaces {
+  display: flex;
+  align-items: center;
+}
+
+.workspace {
+  background: transparent;
+  margin-right: 4px;
+  padding: 3px 8px;
+  color: var(--c64-light-blue);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+  text-transform: uppercase;
+
+  &.displayed {
+    color: var(--c64-white);
+  }
+
+  &.focused {
+    color: var(--c64-blue);
+    background: var(--c64-light-blue);
+    font-weight: bold;
+  }
+
+  &:hover {
+    color: var(--c64-blue);
+    background: var(--c64-light-gray);
+  }
+}
+
+/* Binding mode and buttons */
+.binding-mode,
+.tiling-direction,
+.paused-button {
+  background: var(--c64-purple);
+  color: var(--c64-white);
+  border: none;
+  padding: 3px 8px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+  text-transform: uppercase;
+}
+
+.binding-mode {
+  margin-right: 4px;
+  background: var(--c64-red);
+}
+
+.tiling-direction {
+  background: var(--c64-dark-gray);
+}
+
+.paused-button {
+  background: var(--c64-red);
+  animation: c64-blink 0.5s step-end infinite;
+}
+
+@keyframes c64-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { background: var(--c64-brown); }
+}
+
+/* Right side items */
+.network,
+.memory,
+.cpu,
+.battery,
+.weather {
+  margin-left: 16px;
+  color: var(--c64-light-blue);
+}
+
+.network i,
+.memory i,
+.cpu i,
+.battery i {
+  color: var(--c64-white);
+}
+
+.cpu .high-usage {
+  color: var(--c64-red);
+  font-weight: bold;
+}
+
+/* Battery */
+.battery {
+  position: relative;
+}
+
+.battery .charging-icon {
+  position: absolute;
+  font-size: 7px;
+  left: -8px;
+  top: 3px;
+  color: var(--c64-green);
+}
+
+/* Date/time in center */
+.center {
+  color: var(--c64-white);
+  font-weight: bold;
+}
