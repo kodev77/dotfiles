@@ -1,0 +1,182 @@
+/**
+ * Vim Murphy Theme
+ * Based on Vim's murphy colorscheme - green/yellow/cyan on black
+ */
+
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --text-size: 13px;
+  --icon-size: 12px;
+
+  /* Vim Murphy Colors */
+  --murphy-black: #0a0a0a;
+  --murphy-green: #00ffff;
+  --murphy-green-bright: #7fffff;
+  --murphy-green-dim: #008b8b;
+  --murphy-orange: #FFA500;
+  --murphy-cyan: #90EE90;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Berkeley Mono', 'Consolas', 'Courier New', monospace;
+  font-size: var(--text-size);
+  color: var(--murphy-green);
+  overflow: hidden;
+  letter-spacing: 0.5px;
+}
+
+#root {
+  background: var(--murphy-black);
+  border-bottom: 1px solid #0a3a0a;
+}
+
+div,
+span,
+p {
+  cursor: default;
+  user-select: none;
+}
+
+i {
+  margin-right: 5px;
+  font-size: var(--icon-size);
+  color: var(--murphy-green);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 4px 12px;
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.center {
+  justify-self: center;
+}
+
+.right {
+  justify-self: end;
+}
+
+/* Logo */
+.logo {
+  margin-right: 12px;
+  color: var(--murphy-green-bright);
+}
+
+/* Workspaces */
+.workspaces {
+  display: flex;
+  align-items: center;
+}
+
+.workspace {
+  background: transparent;
+  margin-right: 2px;
+  padding: 2px 6px;
+  color: var(--murphy-green-dim);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+
+  .workspace-name {
+    font-weight: bold;
+  }
+
+  &.displayed {
+    color: var(--murphy-green);
+  }
+
+  &.focused {
+    color: var(--murphy-orange);
+    background: #1a0f00;
+    border-color: var(--murphy-orange);
+  }
+
+  &:hover {
+    background: #001a1a;
+    border-color: var(--murphy-green);
+    color: var(--murphy-green-bright);
+  }
+}
+
+/* Binding mode and buttons */
+.binding-mode,
+.tiling-direction,
+.paused-button {
+  background: #001a00;
+  color: var(--murphy-cyan);
+  border: 1px solid var(--murphy-cyan);
+  padding: 2px 6px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+}
+
+.binding-mode {
+  margin-right: 4px;
+}
+
+.paused-button {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.5; }
+}
+
+/* Right side items */
+.network,
+.memory,
+.cpu,
+.battery,
+.weather {
+  margin-left: 16px;
+  color: var(--murphy-green);
+}
+
+.network {
+  margin-right: 18px;
+}
+
+.cpu .high-usage {
+  color: #ff3333;
+}
+
+/* Battery */
+.battery {
+  position: relative;
+}
+
+.battery .charging-icon {
+  position: absolute;
+  font-size: 7px;
+  left: -8px;
+  top: 3px;
+  color: var(--murphy-green-bright);
+}
+
+/* Date/time in center */
+.center {
+  color: var(--murphy-green);
+}

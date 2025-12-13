@@ -1,0 +1,202 @@
+/**
+ * Vim Koehler Theme
+ * Based on Vim's koehler colorscheme - yellow/orange/cyan on black
+ */
+
+@import 'https://www.nerdfonts.com/assets/css/webfont.css';
+
+:root {
+  --text-size: 13px;
+  --icon-size: 12px;
+
+  /* Vim Koehler Colors */
+  --koehler-black: #000000;
+  --koehler-yellow: #ffff60;
+  --koehler-yellow-bright: #ffffaa;
+  --koehler-orange: #ffb000;
+  --koehler-orange-bright: #ffc000;
+  --koehler-orange-dim: #b07800;
+  --koehler-orange-glow: 0 0 8px #ffb000, 0 0 2px #ffb000;
+  --koehler-orange-glow-bright: 0 0 10px #ffc000, 0 0 20px #ffc000, 0 0 4px #ffc000;
+  --koehler-yellow-glow: 0 0 8px #ffff60, 0 0 2px #ffff60;
+  --koehler-cyan: #40ffff;
+  --koehler-cyan-glow: 0 0 8px #40ffff, 0 0 2px #40ffff;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Berkeley Mono', 'Consolas', 'Courier New', monospace;
+  font-size: var(--text-size);
+  color: var(--koehler-yellow);
+  overflow: hidden;
+  letter-spacing: 0.5px;
+}
+
+#root {
+  background: var(--koehler-black);
+  border-bottom: 1px solid #333333;
+}
+
+div,
+span,
+p {
+  cursor: default;
+  user-select: none;
+}
+
+i {
+  margin-right: 5px;
+  font-size: var(--icon-size);
+  color: var(--koehler-yellow);
+  text-shadow: var(--koehler-yellow-glow);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  height: 100%;
+  padding: 4px 12px;
+}
+
+.left,
+.center,
+.right {
+  display: flex;
+  align-items: center;
+}
+
+.center {
+  justify-self: center;
+}
+
+.right {
+  justify-self: end;
+}
+
+/* Logo / Flashing Cursor */
+.logo {
+  margin-right: 12px;
+  color: #aaffaa;
+  text-shadow: 0 0 4px #00ff00, 0 0 12px #00ff00, 0 0 20px #00ff00;
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  50.1%, 100% { opacity: 0; }
+}
+
+/* Workspaces */
+.workspaces {
+  display: flex;
+  align-items: center;
+}
+
+.workspace {
+  background: transparent;
+  margin-right: 2px;
+  padding: 2px 6px;
+  color: var(--koehler-orange-dim);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+  text-shadow: 0 0 4px var(--koehler-orange-dim);
+
+  .workspace-name {
+    font-weight: bold;
+  }
+
+  &.displayed {
+    color: var(--koehler-orange);
+    text-shadow: var(--koehler-orange-glow);
+  }
+
+  &.focused {
+    color: var(--koehler-orange-bright);
+    background: #2a1a00;
+    border-color: var(--koehler-orange);
+    text-shadow: var(--koehler-orange-glow-bright);
+  }
+
+  &:hover {
+    background: #2a1a00;
+    border-color: var(--koehler-orange);
+    color: var(--koehler-orange-bright);
+  }
+}
+
+/* Binding mode and buttons */
+.binding-mode,
+.tiling-direction,
+.paused-button {
+  background: #001a1a;
+  color: var(--koehler-cyan);
+  border: 1px solid var(--koehler-cyan);
+  padding: 2px 6px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--text-size);
+  text-shadow: var(--koehler-cyan-glow);
+}
+
+.binding-mode {
+  margin-right: 4px;
+}
+
+.paused-button {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.5; }
+}
+
+/* Right side items */
+.network,
+.memory,
+.cpu,
+.battery,
+.weather {
+  margin-left: 16px;
+  color: var(--koehler-yellow);
+  text-shadow: var(--koehler-yellow-glow);
+}
+
+.network {
+  margin-right: 18px;
+}
+
+.cpu .high-usage {
+  color: #ff3333;
+}
+
+/* Battery */
+.battery {
+  position: relative;
+}
+
+.battery .charging-icon {
+  position: absolute;
+  font-size: 7px;
+  left: -8px;
+  top: 3px;
+  color: var(--koehler-yellow-bright);
+}
+
+/* Date/time in center */
+.center {
+  color: var(--koehler-yellow);
+  text-shadow: var(--koehler-yellow-glow);
+  text-transform: uppercase;
+}
