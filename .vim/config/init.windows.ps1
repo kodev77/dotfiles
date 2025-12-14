@@ -41,6 +41,14 @@ if (!(Get-Command rg -ErrorAction SilentlyContinue)) {
     Write-Host "ripgrep already installed" -ForegroundColor Green
 }
 
+# fd (fast find alternative, for fzf directory search)
+if (!(Get-Command fd -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing fd..." -ForegroundColor Yellow
+    choco install fd -y
+} else {
+    Write-Host "fd already installed" -ForegroundColor Green
+}
+
 # bat (syntax highlighting for fzf preview)
 if (!(Get-Command bat -ErrorAction SilentlyContinue)) {
     Write-Host "Installing bat..." -ForegroundColor Yellow
@@ -323,6 +331,46 @@ if exist "%USERPROFILE%\.vim\lastdir" (
 Set-Content -Path $vimBatPath -Value $vimBatContent -Encoding ASCII
 Write-Host "Created vim.bat wrapper: $vimBatPath" -ForegroundColor Green
 
+# Create cdf.bat wrapper for fuzzy directory navigation
+# Use "cdf ." to include hidden files/directories
+$cdfBatPath = "$toolsDir\cdf.bat"
+$cdfBatContent = @'
+@echo off
+set "tmpfile=%USERPROFILE%\.vim\.lastcdf"
+set "fdArgs=-a --type d"
+if "%1"=="." set "fdArgs=%fdArgs% --hidden"
+fd %fdArgs% . 2>nul | fzf > "%tmpfile%"
+if exist "%tmpfile%" (
+    for /f "usebackq delims=" %%d in (`powershell -NoProfile -Command "Get-Content '%tmpfile%' -First 1"`) do (
+        cd /d "%%d"
+    )
+    del "%tmpfile%"
+)
+'@
+
+Set-Content -Path $cdfBatPath -Value $cdfBatContent -Encoding ASCII
+Write-Host "Created cdf.bat wrapper: $cdfBatPath" -ForegroundColor Green
+
+# Create cdff.bat wrapper for fuzzy file search, cd to file's directory
+# Use "cdff ." to include hidden files/directories
+$cdffBatPath = "$toolsDir\cdff.bat"
+$cdffBatContent = @'
+@echo off
+set "tmpfile=%USERPROFILE%\.vim\.lastcdff"
+set "fdArgs=-a"
+if "%1"=="." set "fdArgs=%fdArgs% --hidden"
+fd %fdArgs% . 2>nul | fzf > "%tmpfile%"
+if exist "%tmpfile%" (
+    for /f "usebackq delims=" %%f in (`powershell -NoProfile -Command "Get-Content '%tmpfile%' -First 1"`) do (
+        cd /d "%%~dpf"
+    )
+    del "%tmpfile%"
+)
+'@
+
+Set-Content -Path $cdffBatPath -Value $cdffBatContent -Encoding ASCII
+Write-Host "Created cdff.bat wrapper: $cdffBatPath" -ForegroundColor Green
+
 # Check if tools directory is in PATH
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($userPath -notlike "*$toolsDir*") {
@@ -363,6 +411,113 @@ Set-Content -Path $vifmrcPath -Value $vifmrcContent -Encoding ASCII
 Write-Host "Created vifm config: $vifmrcPath" -ForegroundColor Green
 
 # =============================================================================
+# PowerShell Profile Setup (cdf/cdff functions)
+# =============================================================================
+
+Write-Host ""
+Write-Host "Setting up PowerShell profile functions..." -ForegroundColor Cyan
+
+$profileDir = Split-Path $PROFILE -Parent
+if (!(Test-Path $profileDir)) {
+    New-Item -ItemType Directory -Path $profileDir -Force | Out-Null
+}
+
+$fzfFunctions = @'
+
+# FZF directory navigation (added by init.windows.ps1)
+# Use "cdf ." or "cdff ." to include hidden files/directories
+function cdf {
+    param([string]$opt)
+    if ($opt -eq ".") {
+        $selection = fd -a --hidden --type d | fzf
+    } else {
+        $selection = fd -a --type d | fzf
+    }
+    if ($selection) { Set-Location $selection }
+}
+
+function cdff {
+    param([string]$opt)
+    if ($opt -eq ".") {
+        $selection = fd -a --hidden | fzf
+    } else {
+        $selection = fd -a | fzf
+    }
+    if ($selection) { Set-Location (Split-Path $selection -Parent) }
+}
+'@
+
+if (!(Test-Path $PROFILE)) {
+    New-Item -ItemType File -Path $PROFILE -Force | Out-Null
+    Add-Content -Path $PROFILE -Value $fzfFunctions
+    Write-Host "Created PowerShell profile with cdf/cdff functions" -ForegroundColor Green
+} else {
+    # Remove existing cdf/cdff functions if present
+    $profileContent = Get-Content $PROFILE -Raw
+    if ($profileContent -match "# FZF directory navigation") {
+        # Remove old function block (from marker comment to end of cdff function)
+        $profileContent = $profileContent -replace "(?s)# FZF directory navigation.*?function cdff \{.*?\n\}", ""
+        $profileContent = $profileContent.Trim()
+        Set-Content -Path $PROFILE -Value $profileContent -NoNewline
+        Write-Host "Removed old cdf/cdff functions from PowerShell profile" -ForegroundColor Yellow
+    }
+    Add-Content -Path $PROFILE -Value $fzfFunctions
+    Write-Host "Added cdf/cdff functions to PowerShell profile" -ForegroundColor Green
+}
+
+# =============================================================================
+# Git Bash Setup (cdf/cdff functions in .bashrc)
+# =============================================================================
+
+Write-Host ""
+Write-Host "Setting up Git Bash functions..." -ForegroundColor Cyan
+
+$bashrcPath = "$env:USERPROFILE\.bashrc"
+
+$bashFunctions = @'
+
+# FZF directory navigation (added by init.windows.ps1)
+# Use "cdf ." or "cdff ." to include hidden files/directories
+cdf() {
+    local selection
+    if [ "$1" = "." ]; then
+        selection=$(fd -a --hidden --type d | fzf)
+    else
+        selection=$(fd -a --type d | fzf)
+    fi
+    [ -n "$selection" ] && cd "$selection"
+}
+
+cdff() {
+    local selection
+    if [ "$1" = "." ]; then
+        selection=$(fd -a --hidden | fzf)
+    else
+        selection=$(fd -a | fzf)
+    fi
+    [ -n "$selection" ] && cd "$(dirname "$selection")"
+}
+'@
+
+if (!(Test-Path $bashrcPath)) {
+    New-Item -ItemType File -Path $bashrcPath -Force | Out-Null
+    Add-Content -Path $bashrcPath -Value $bashFunctions
+    Write-Host "Created .bashrc with cdf/cdff functions" -ForegroundColor Green
+} else {
+    # Remove existing cdf/cdff functions if present
+    $bashContent = Get-Content $bashrcPath -Raw
+    if ($bashContent -match "# FZF directory navigation") {
+        # Remove old function block (from marker comment to end of cdff function)
+        $bashContent = $bashContent -replace "(?s)# FZF directory navigation.*?cdff\(\) \{.*?\n\}", ""
+        $bashContent = $bashContent.Trim()
+        Set-Content -Path $bashrcPath -Value $bashContent -NoNewline
+        Write-Host "Removed old cdf/cdff functions from .bashrc" -ForegroundColor Yellow
+    }
+    Add-Content -Path $bashrcPath -Value $bashFunctions
+    Write-Host "Added cdf/cdff functions to .bashrc" -ForegroundColor Green
+}
+
+# =============================================================================
 # Summary
 # =============================================================================
 
@@ -373,6 +528,7 @@ Write-Host "Installed tools:" -ForegroundColor Cyan
 Write-Host "  - Node.js: $(node -v 2>$null)" -ForegroundColor White
 Write-Host "  - fzf: $(fzf --version 2>$null)" -ForegroundColor White
 Write-Host "  - ripgrep: $(rg --version 2>$null | Select-Object -First 1)" -ForegroundColor White
+Write-Host "  - fd: $(fd --version 2>$null)" -ForegroundColor White
 Write-Host "  - bat: $(bat --version 2>$null | Select-Object -First 1)" -ForegroundColor White
 Write-Host "  - dotnet: $(dotnet --version 2>$null)" -ForegroundColor White
 Write-Host "  - sqlcmd: $(if (Get-Command sqlcmd -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
@@ -382,6 +538,8 @@ Write-Host "  - glazewm: $(if (Get-Command glazewm -ErrorAction SilentlyContinue
 Write-Host "  - zebar: $(if (Get-Command zebar -ErrorAction SilentlyContinue) { 'installed' } else { 'not found' })" -ForegroundColor White
 Write-Host "Shell wrappers:" -ForegroundColor Cyan
 Write-Host "  - vim.bat: $vimBatPath" -ForegroundColor White
+Write-Host "  - cdf.bat: $cdfBatPath" -ForegroundColor White
+Write-Host "  - cdff.bat: $cdffBatPath" -ForegroundColor White
 Write-Host "  - tools in PATH: $(if ($userPath -like "*$toolsDir*") { 'yes' } else { 'added (restart terminal)' })" -ForegroundColor White
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Yellow
