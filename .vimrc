@@ -72,6 +72,20 @@ set noruler
 " Netrw
 let g:netrw_keepdir = 0
 let g:netrw_browse_split = 0
+let g:netrw_nogx = 1
+
+" Fix gx to use Windows default file associations
+function! OpenWithDefault()
+  if &filetype == 'netrw'
+    let file = b:netrw_curdir . '/' . netrw#Call('NetrwGetWord')
+  else
+    let file = expand('<cfile>:p')
+  endif
+  " Normalize to backslashes for Windows
+  let file = substitute(file, '/', '\', 'g')
+  call system('explorer "' . file . '"')
+endfunction
+nnoremap <silent> gx :call OpenWithDefault()<CR>
 
 " Netrw: <leader>e opens file in main buffer (window 2)
 function! NetrwOpenInMainBuffer()
@@ -508,6 +522,19 @@ autocmd FileType dbout setlocal modifiable
 
 " Disable folding in Dadbod query results
 autocmd FileType dbout setlocal nofoldenable
+
+" Select database connection using fzf
+function! DBSelectConnection()
+  let l:dbs = keys(g:dbs)
+  call fzf#run(fzf#wrap({
+    \ 'source': l:dbs,
+    \ 'sink': {name -> execute('let b:db = g:dbs["' . name . '"] | echo "Connected to: ' . name . '"')},
+    \ 'options': '--prompt="Select DB> "'
+  \ }))
+endfunction
+
+command! DBSelect call DBSelectConnection()
+nnoremap <leader>ds :DBSelect<CR>
 
 " Clear search highlights
 nnoremap <silent> <leader>nh :nohlsearch<CR>
