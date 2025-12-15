@@ -67,35 +67,27 @@ window_behavior:
 #   Monitor 0 = leftmost, Monitor 1 = next to the right, etc.
 # Workspaces 1-9 on main monitor, workspace 0 on secondary
 workspaces:
-  - name: "0" 
+  - name: "0"
     display_name: "0:MORE"
     bind_to_monitor: 1
   - name: "1"
     display_name: "1:NOTES"
-    bind_to_monitor: 0
   - name: "2"
     display_name: "2:CODE"
   - name: "3"
     display_name: "3:BUILD"
-    bind_to_monitor: 0
   - name: "4"
     display_name: "4:GIT"
-    bind_to_monitor: 0
   - name: "5"
     display_name: "5:DB"
-    bind_to_monitor: 0
   - name: "6"
     display_name: "6:WEB"
-    bind_to_monitor: 0
   - name: "7"
     display_name: "7:GRID"
-    bind_to_monitor: 0
   - name: "8"
     display_name: "8:DEEP SPACE"
-    bind_to_monitor: 0
   - name: "9"
     display_name: "9:OUTER RIM"
-    bind_to_monitor: 0
 
 # =============================================================================
 # Window Rules
@@ -205,6 +197,14 @@ keybindings:
     bindings: ["alt+9"]
 
   # -----------------------------------------------------------------------------
+  # Workspace Cycling (Alt + N/P)
+  # -----------------------------------------------------------------------------
+  - commands: ["focus --next-active-workspace-on-monitor"]
+    bindings: ["alt+n"]
+  - commands: ["focus --prev-active-workspace-on-monitor"]
+    bindings: ["alt+p"]
+
+  # -----------------------------------------------------------------------------
   # Move Window to Workspace (Alt + Shift + Number)
   # -----------------------------------------------------------------------------
   - commands: ["move --workspace 0", "focus --workspace 0"]
@@ -279,6 +279,20 @@ keybindings:
   # Redraw windows
   - commands: ["wm-redraw"]
     bindings: ["alt+shift+w"]
+
+  # Redistribute workspaces to external monitor (after monitor reconnect)
+  - commands: [
+      "focus --workspace 1", "move-workspace --direction left",
+      "focus --workspace 2", "move-workspace --direction left",
+      "focus --workspace 3", "move-workspace --direction left",
+      "focus --workspace 4", "move-workspace --direction left",
+      "focus --workspace 5", "move-workspace --direction left",
+      "focus --workspace 6", "move-workspace --direction left",
+      "focus --workspace 7", "move-workspace --direction left",
+      "focus --workspace 8", "move-workspace --direction left",
+      "focus --workspace 9", "move-workspace --direction left"
+    ]
+    bindings: ["alt+shift+d"]
 
   # Exit GlazeWM
   - commands: ["wm-exit"]

@@ -325,6 +325,9 @@ let g:ale_linters = { 'cs': ['OmniSharp'] }
 " =============================================================================
 " VIM-GITGUTTER (GIT DIFF SIGNS)
 " =============================================================================
+" Disable default mappings (we define our own below)
+let g:gitgutter_map_keys = 0
+
 let g:gitgutter_sign_added = '│'
 let g:gitgutter_sign_modified = '│'
 let g:gitgutter_sign_removed = '_'
@@ -338,10 +341,21 @@ nnoremap <leader>gd :GitGutterToggle<CR>
 nmap ]h <Plug>(GitGutterNextHunk)
 nmap [h <Plug>(GitGutterPrevHunk)
 
-" Hunk operations
-nmap <leader>hp <Plug>(GitGutterPreviewHunk)
-nmap <leader>hs <Plug>(GitGutterStageHunk)
-nmap <leader>hu <Plug>(GitGutterUndoHunk)
+" Hunk operations (Capital H to avoid conflict with window navigation)
+nmap <leader>Hp <Plug>(GitGutterPreviewHunk)
+nmap <leader>Hs <Plug>(GitGutterStageHunk)
+nmap <leader>Hu <Plug>(GitGutterUndoHunk)
+
+" =============================================================================
+" WINDOW NAVIGATION (Leader + HJKL)
+" =============================================================================
+nnoremap <leader>h <C-w>h
+nnoremap <leader>j <C-w>j
+nnoremap <leader>k <C-w>k
+nnoremap <leader>l <C-w>l
+
+" Leader+W as Ctrl-W prefix for all window commands
+nnoremap <leader>w <C-w>
 
 " =============================================================================
 " VIM-AIRLINE (STATUSBAR)
@@ -381,6 +395,7 @@ set tabline=%!MyTabLine()
 " Tab keybindings
 nnoremap <leader>tt :tabnew<CR>
 nnoremap <leader>tr :TabName<Space>
+nnoremap <leader>tc :tabclose<CR>
 
 " Tab navigation: <leader>{n} for direct tab access
 nnoremap <leader>1 1gt
@@ -504,6 +519,7 @@ command! AttachDotnetAuto call AttachToDotnetFromVimspector()
 " VIM-DADBOD (DATABASE)
 " =============================================================================
 nnoremap <leader>db :DBUIToggle<CR>
+vnoremap <leader>r :DB<CR>
 
 let g:db_ui_save_location = expand('~/.db_ui_queries')
 let g:db_ui_execute_on_save = 0
