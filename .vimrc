@@ -539,6 +539,28 @@ autocmd FileType dbout setlocal modifiable
 " Disable folding in Dadbod query results
 autocmd FileType dbout setlocal nofoldenable
 
+" Dbout syntax highlighting (linked to colorscheme groups)
+highlight link DboutString Include  " Purple/Magenta 
+highlight link DboutNumber Statement      " Yellow
+highlight link DboutGuid Type             " Green
+highlight link DboutTimestamp Function    " Cyan
+highlight link DboutTruncated Directory   " Dark Orange
+highlight link DboutNull Comment          " Red
+
+" Custom SQL output formatter (functions in autoload/dadbod_format.vim)
+augroup dadbod_format
+  autocmd!
+  " Auto-format when filetype is set to dbout (uses polling to wait for content)
+  autocmd FileType dbout call dadbod_format#auto_format()
+  " Backup: format on BufEnter if not yet formatted
+  autocmd BufEnter * if &filetype ==# 'dbout' && !get(b:, 'dbout_is_formatted', 0) | call dadbod_format#format() | endif
+  " Manual format keybinding - works from any window
+  nnoremap <leader>df :call dadbod_format#format_from_anywhere()<CR>
+  autocmd FileType dbout nnoremap <buffer> <CR> :call dadbod_format#expand_cell()<CR>
+  autocmd FileType dbout nnoremap <buffer> <leader>fr :call dadbod_format#toggle_raw()<CR>
+  autocmd FileType dbout nnoremap <buffer> q :call dadbod_format#close_expand()<CR>
+augroup END
+
 " Select database connection using fzf
 function! DBSelectConnection()
   let l:dbs = keys(g:dbs)
