@@ -519,7 +519,8 @@ command! AttachDotnetAuto call AttachToDotnetFromVimspector()
 " VIM-DADBOD (DATABASE)
 " =============================================================================
 nnoremap <leader>db :DBUIToggle<CR>
-vnoremap <leader>r :DB<CR>
+nnoremap <leader>r :.DB<CR>
+vnoremap <leader>r "ry:DB <C-r>r<CR>
 
 let g:db_ui_save_location = expand('~/.db_ui_queries')
 let g:db_ui_execute_on_save = 0
