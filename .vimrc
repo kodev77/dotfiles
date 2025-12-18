@@ -83,9 +83,9 @@ function! OpenWithDefault()
   endif
   " Normalize to backslashes for Windows
   let file = substitute(file, '/', '\', 'g')
-  call system('explorer "' . file . '"')
+  call job_start('cmd /c start "" "' . file . '"')
 endfunction
-nnoremap <silent> gx :call OpenWithDefault()<CR>
+nnoremap <silent> <leader>x :call OpenWithDefault()<CR>
 
 " Netrw: <leader>e opens file in main buffer (window 2)
 function! NetrwOpenInMainBuffer()
@@ -241,7 +241,7 @@ command! -nargs=0 Format :call CocAction('format')
 " =============================================================================
 let g:OmniSharp_server_use_net6 = 1
 let g:OmniSharp_start_server = 1
-let g:OmniSharp_highlighting = 3
+let g:OmniSharp_highlighting = 1
 let g:OmniSharp_diagnostic_enable = 1
 let g:OmniSharp_diagnostic_show_symbol = 1
 let g:OmniSharp_selector_ui = 'fzf'
@@ -519,11 +519,53 @@ command! AttachDotnetAuto call AttachToDotnetFromVimspector()
 " VIM-DADBOD (DATABASE)
 " =============================================================================
 nnoremap <leader>db :DBUIToggle<CR>
-nnoremap <leader>r :.DB<CR>
-vnoremap <leader>r "ry:DB <C-r>r<CR>
+nnoremap <leader>r :call ExecuteDBQuery(getline('.'))<CR>
+vnoremap <leader>r "ry:call ExecuteDBQuery(@r)<CR>
+
+" Execute query with ROW_COUNT() appended for MySQL UPDATE/DELETE/INSERT
+function! ExecuteDBQuery(query) abort
+  let l:query = trim(a:query)
+  if empty(l:query)
+    return
+  endif
+
+  " Get current DB connection
+  let l:db = get(b:, 'db', get(g:, 'db', ''))
+  let l:is_mysql = l:db =~? '^mysql:'
+
+  " Check if it's a modifying query (UPDATE/DELETE/INSERT)
+  let l:is_modify = l:query =~? '\v^\s*(UPDATE|DELETE|INSERT)\s'
+
+  " For MySQL modifying queries, append ROW_COUNT() to get affected rows
+  if l:is_mysql && l:is_modify
+    " Remove trailing semicolon if present, then add our appended query
+    let l:query = substitute(l:query, '\s*;\s*$', '', '')
+    let l:query = l:query . "; SELECT ROW_COUNT() as rows_affected;"
+  endif
+
+  execute 'DB ' . l:query
+endfunction
 
 let g:db_ui_save_location = expand('~/.db_ui_queries')
 let g:db_ui_execute_on_save = 0
+
+" Grab text from visible popup and put in clipboard
+function! CopyPopupContent()
+  let popups = popup_list()
+  if empty(popups)
+    echo "No popups visible"
+    return
+  endif
+  for id in popups
+    let lines = getbufline(winbufnr(id), 1, '$')
+    if !empty(lines)
+      let @+ = join(lines, "\n")
+      echo "Copied " . len(lines) . " lines to clipboard"
+      return
+    endif
+  endfor
+endfunction
+nnoremap <leader>cp :call CopyPopupContent()<CR>
 
 let g:dbs = {
 \ 'local_mysql': 'mysql://root:BestRock1234@localhost/sqldb-jobtracker-dev-scus',
@@ -541,12 +583,15 @@ autocmd FileType dbout setlocal modifiable
 autocmd FileType dbout setlocal nofoldenable
 
 " Dbout syntax highlighting (linked to colorscheme groups)
-highlight link DboutString Include  " Purple/Magenta 
+highlight link DboutBorder Normal
+highlight DboutHeader ctermfg=fg guifg=fg
+highlight link DboutString Include  " Purple/Magenta
 highlight link DboutNumber Statement      " Yellow
 highlight link DboutGuid Type             " Green
 highlight link DboutTimestamp Function    " Cyan
 highlight link DboutTruncated Directory   " Dark Orange
 highlight link DboutNull Comment          " Red
+highlight link DboutRowCount Comment      " Subtle row count
 
 " Custom SQL output formatter (functions in autoload/dadbod_format.vim)
 augroup dadbod_format

@@ -411,6 +411,17 @@ Set-Content -Path $vifmrcPath -Value $vifmrcContent -Encoding ASCII
 Write-Host "Created vifm config: $vifmrcPath" -ForegroundColor Green
 
 # =============================================================================
+# FZF Default Options (Ctrl+Y to copy to clipboard)
+# =============================================================================
+
+Write-Host ""
+Write-Host "Setting up FZF default options..." -ForegroundColor Cyan
+
+$fzfOpts = "--bind 'ctrl-y:execute-silent(echo {} | clip)'"
+[Environment]::SetEnvironmentVariable("FZF_DEFAULT_OPTS", $fzfOpts, "User")
+Write-Host "Set FZF_DEFAULT_OPTS environment variable (Ctrl+Y copies to clipboard)" -ForegroundColor Green
+
+# =============================================================================
 # PowerShell Profile Setup (cdf/cdff functions)
 # =============================================================================
 
@@ -423,6 +434,10 @@ if (!(Test-Path $profileDir)) {
 }
 
 $fzfFunctions = @'
+
+# FZF default options (added by init.windows.ps1)
+# Ctrl+Y copies current selection to clipboard
+$env:FZF_DEFAULT_OPTS = "--bind 'ctrl-y:execute-silent(echo {} | clip)'"
 
 # FZF directory navigation (added by init.windows.ps1)
 # Use "cdf ." or "cdff ." to include hidden files/directories
@@ -452,17 +467,18 @@ if (!(Test-Path $PROFILE)) {
     Add-Content -Path $PROFILE -Value $fzfFunctions
     Write-Host "Created PowerShell profile with cdf/cdff functions" -ForegroundColor Green
 } else {
-    # Remove existing cdf/cdff functions if present
+    # Remove existing fzf functions if present
     $profileContent = Get-Content $PROFILE -Raw
-    if ($profileContent -match "# FZF directory navigation") {
+    if ($profileContent -match "# FZF (default options|directory navigation)") {
         # Remove old function block (from marker comment to end of cdff function)
+        $profileContent = $profileContent -replace "(?s)# FZF default options.*?function cdff \{.*?\n\}", ""
         $profileContent = $profileContent -replace "(?s)# FZF directory navigation.*?function cdff \{.*?\n\}", ""
         $profileContent = $profileContent.Trim()
         Set-Content -Path $PROFILE -Value $profileContent -NoNewline
-        Write-Host "Removed old cdf/cdff functions from PowerShell profile" -ForegroundColor Yellow
+        Write-Host "Removed old fzf functions from PowerShell profile" -ForegroundColor Yellow
     }
     Add-Content -Path $PROFILE -Value $fzfFunctions
-    Write-Host "Added cdf/cdff functions to PowerShell profile" -ForegroundColor Green
+    Write-Host "Added fzf functions to PowerShell profile" -ForegroundColor Green
 }
 
 # =============================================================================
@@ -475,6 +491,10 @@ Write-Host "Setting up Git Bash functions..." -ForegroundColor Cyan
 $bashrcPath = "$env:USERPROFILE\.bashrc"
 
 $bashFunctions = @'
+
+# FZF default options (added by init.windows.ps1)
+# Ctrl+Y copies current selection to clipboard
+export FZF_DEFAULT_OPTS="--bind 'ctrl-y:execute-silent(echo {} | clip)'"
 
 # FZF directory navigation (added by init.windows.ps1)
 # Use "cdf ." or "cdff ." to include hidden files/directories
@@ -504,17 +524,18 @@ if (!(Test-Path $bashrcPath)) {
     Add-Content -Path $bashrcPath -Value $bashFunctions
     Write-Host "Created .bashrc with cdf/cdff functions" -ForegroundColor Green
 } else {
-    # Remove existing cdf/cdff functions if present
+    # Remove existing fzf functions if present
     $bashContent = Get-Content $bashrcPath -Raw
-    if ($bashContent -match "# FZF directory navigation") {
+    if ($bashContent -match "# FZF (default options|directory navigation)") {
         # Remove old function block (from marker comment to end of cdff function)
+        $bashContent = $bashContent -replace "(?s)# FZF default options.*?cdff\(\) \{.*?\n\}", ""
         $bashContent = $bashContent -replace "(?s)# FZF directory navigation.*?cdff\(\) \{.*?\n\}", ""
         $bashContent = $bashContent.Trim()
         Set-Content -Path $bashrcPath -Value $bashContent -NoNewline
-        Write-Host "Removed old cdf/cdff functions from .bashrc" -ForegroundColor Yellow
+        Write-Host "Removed old fzf functions from .bashrc" -ForegroundColor Yellow
     }
     Add-Content -Path $bashrcPath -Value $bashFunctions
-    Write-Host "Added cdf/cdff functions to .bashrc" -ForegroundColor Green
+    Write-Host "Added fzf functions to .bashrc" -ForegroundColor Green
 }
 
 # =============================================================================
