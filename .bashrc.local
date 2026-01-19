@@ -1,0 +1,8 @@
+# eza aliases
+alias ls='eza --icons --group-directories-first'
+alias ll='eza -l --icons --group-directories-first'
+alias la='eza -la --icons --group-directories-first'
+alias tree='eza --tree --icons --group-directories-first'
+alias tree2='eza --tree --icons --level=2'
+alias tree3='eza --tree --icons --level=3'
+alias treea='eza --tree --icons -a'

@@ -1,0 +1,49 @@
+#!/bin/bash
+
+echo "installing dotfiles"
+
+# ensure ~/.local/bin exists and is in PATH
+mkdir -p ~/.local/bin
+if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+fi
+
+# install broot if not present
+if ! command -v broot &> /dev/null; then
+    echo "installing broot"
+    curl -o ~/.local/bin/broot -L https://dystroy.org/broot/download/x86_64-linux/broot
+    chmod +x ~/.local/bin/broot
+else
+    echo "broot already installed"
+fi
+
+# install eza if not present
+if ! command -v eza &> /dev/null; then
+    echo "installing eza"
+    sudo apt install -y gpg
+    sudo mkdir -p /etc/apt/keyrings
+    wget -qO- https://raw.githubusercontent.com/eza-community/eza/main/deb.asc | sudo gpg --dearmor -o /etc/apt/keyrings/gierens.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main" | sudo tee /etc/apt/sources.list.d/gierens.list
+    sudo chmod 644 /etc/apt/keyrings/gierens.gpg /etc/apt/sources.list.d/gierens.list
+    sudo apt update
+    sudo apt install -y eza
+else
+    echo "eza already installed"
+fi
+
+echo "linking .vim"
+ln -sf ~/repo/dotfiles/.vim ~/.vim
+
+echo "linking .vimrc"
+ln -sf ~/repo/dotfiles/.vimrc ~/.vimrc
+
+echo "adding bashrc.local to .bashrc"
+if ! grep -q "repo/dotfiles/.bashrc.local" ~/.bashrc; then
+    echo "" >> ~/.bashrc
+    echo "# load custom dotfiles config" >> ~/.bashrc
+    echo "if [ -f ~/repo/dotfiles/.bashrc.local ]; then" >> ~/.bashrc
+    echo "    source ~/repo/dotfiles/.bashrc.local" >> ~/.bashrc
+    echo "fi" >> ~/.bashrc
+fi
+
+echo "done"

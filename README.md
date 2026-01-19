@@ -19,8 +19,5 @@ ln -s ~/repo/ko/dotfiles/.vim ~/.vim
 ```
 
 ### TODO LIST - add these to the config init script
-- vimrc
-- ghostty
-- zsh
 - wmctrl
 
