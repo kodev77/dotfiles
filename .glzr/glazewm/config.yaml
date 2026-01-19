@@ -68,26 +68,26 @@ window_behavior:
 # Workspaces 1-9 on main monitor, workspace 0 on secondary
 workspaces:
   - name: "0"
-    display_name: "0:MORE"
+    display_name: "0"
     bind_to_monitor: 1
   - name: "1"
-    display_name: "1:NOTES"
+    display_name: "1"
   - name: "2"
-    display_name: "2:CODE"
+    display_name: "2"
   - name: "3"
-    display_name: "3:BUILD"
+    display_name: "3"
   - name: "4"
-    display_name: "4:GIT"
+    display_name: "4"
   - name: "5"
-    display_name: "5:DB"
+    display_name: "5"
   - name: "6"
-    display_name: "6:WEB"
+    display_name: "6"
   - name: "7"
-    display_name: "7:GRID"
+    display_name: "7"
   - name: "8"
-    display_name: "8:DEEP SPACE"
+    display_name: "8"
   - name: "9"
-    display_name: "9:OUTER RIM"
+    display_name: "9"
 
 # =============================================================================
 # Window Rules
@@ -149,16 +149,16 @@ binding_modes:
 # =============================================================================
 keybindings:
   # -----------------------------------------------------------------------------
-  # Window Focus (Alt + HJKL)
+  # Window Focus (Alt + Arrow Keys)
   # -----------------------------------------------------------------------------
   - commands: ["focus --direction left"]
-    bindings: ["alt+h"]
+    bindings: ["alt+Left"]
   - commands: ["focus --direction down"]
-    bindings: ["alt+j"]
+    bindings: ["alt+Down"]
   - commands: ["focus --direction up"]
-    bindings: ["alt+k"]
+    bindings: ["alt+Up"]
   - commands: ["focus --direction right"]
-    bindings: ["alt+l"]
+    bindings: ["alt+Right"]
 
   # -----------------------------------------------------------------------------
   # Window Movement (Alt + Shift + HJKL)

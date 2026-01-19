@@ -606,8 +606,17 @@ function! s:try_parse_with_delimiter(lines, delim) abort
 endfunction
 
 function! s:split_and_trim(line, delim) abort
-  let l:parts = split(a:line, a:delim)
-  return map(l:parts, 'trim(v:val)')
+  let l:parts = split(a:line, a:delim, 1)  " keepempty=1 to preserve empty cells
+  let l:trimmed = map(l:parts, 'trim(v:val)')
+  " Remove empty elements at start and end (from leading/trailing delimiters)
+  " but keep empty elements in the middle (actual empty cell values)
+  while !empty(l:trimmed) && empty(l:trimmed[0])
+    call remove(l:trimmed, 0)
+  endwhile
+  while !empty(l:trimmed) && empty(l:trimmed[-1])
+    call remove(l:trimmed, -1)
+  endwhile
+  return l:trimmed
 endfunction
 
 function! s:parse_fixed_width(lines) abort

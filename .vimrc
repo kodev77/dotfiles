@@ -570,7 +570,8 @@ nnoremap <leader>cp :call CopyPopupContent()<CR>
 let g:dbs = {
 \ 'local_mysql': 'mysql://root:BestRock1234@localhost/sqldb-jobtracker-dev-scus',
 \ 'RPC_PI5_mysql': 'mysql://root:BestRock1234@192.168.254.115:3306',
-\ 'aspire_mysql': 'mysql://root:BestRock1234@localhost:3307/sqldb-jobtracker-dev-scus',
+\ 'aspire_mysql': 'mysql://root:BestRock1234@localhost:3307/jobtracker',
+\ 'aspire_sqlserver': 'sqlserver://sa:WQkxMgtyrAf3v07Nes!G1U@127.0.0.1:59083/jobtracker',
 \ 'local_sqlserver': 'sqlserver://sa:letmein@KORTEGO-ROG-001/sqldb-jobtracker-dev-scus',
 \ 'azure_dev': 'sqlserver://jtadmin:6PWXQFTFkDWbQJ@sql-jobtracker-dev-southcentralus.database.windows.net/sqldb-jobtracker-dev-scus',
 \ }
