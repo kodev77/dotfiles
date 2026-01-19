@@ -8,6 +8,24 @@ if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc; then
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 fi
 
+# install JetBrains Mono Nerd Font if not present
+if ! fc-list | grep -qi "JetBrainsMono Nerd"; then
+    echo "installing JetBrains Mono Nerd Font"
+    mkdir -p ~/.local/share/fonts
+    # fix ownership if fonts dir is owned by root
+    if [ "$(stat -c '%U' ~/.local/share/fonts)" = "root" ]; then
+        sudo chown -R "$USER:$USER" ~/.local/share/fonts
+    fi
+    curl -fLo /tmp/JetBrainsMono.tar.xz -L https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz
+    mkdir -p /tmp/jetbrains-nerd-font
+    tar -xf /tmp/JetBrainsMono.tar.xz -C /tmp/jetbrains-nerd-font
+    mv /tmp/jetbrains-nerd-font/*.ttf ~/.local/share/fonts/
+    rm -rf /tmp/JetBrainsMono.tar.xz /tmp/jetbrains-nerd-font
+    fc-cache -fv
+else
+    echo "JetBrains Mono Nerd Font already installed"
+fi
+
 # install broot if not present
 if ! command -v broot &> /dev/null; then
     echo "installing broot"
@@ -15,6 +33,22 @@ if ! command -v broot &> /dev/null; then
     chmod +x ~/.local/bin/broot
 else
     echo "broot already installed"
+fi
+
+# set up broot shell function if not present
+if [ ! -f ~/.config/broot/launcher/bash/br ]; then
+    echo "setting up broot shell function"
+    broot --install
+else
+    echo "broot shell function already set up"
+fi
+
+# enable nerdfont icons in broot
+if [ -f ~/.config/broot/conf.hjson ] && ! grep -q '^icon_theme:' ~/.config/broot/conf.hjson; then
+    echo "enabling nerdfont icons in broot"
+    sed -i 's/# icon_theme: vscode/icon_theme: nerdfont/' ~/.config/broot/conf.hjson
+else
+    echo "broot icons already configured"
 fi
 
 # install eza if not present
@@ -32,10 +66,14 @@ else
 fi
 
 echo "linking .vim"
+rm -rf ~/.vim
 ln -sf ~/repo/dotfiles/.vim ~/.vim
 
 echo "linking .vimrc"
 ln -sf ~/repo/dotfiles/.vimrc ~/.vimrc
+
+echo "linking .gitconfig"
+ln -sf ~/repo/dotfiles/.gitconfig ~/.gitconfig
 
 echo "adding bashrc.local to .bashrc"
 if ! grep -q "repo/dotfiles/.bashrc.local" ~/.bashrc; then
