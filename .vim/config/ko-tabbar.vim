@@ -8,6 +8,7 @@ function! NetrwTabOpen()
     let curline = getline('.')
     let fname = substitute(curline, '^\s*\|\s*$', '', 'g')
     execute 'tabnew ' . b:netrw_curdir . '/' . fname
+    echo ''
 endfunction
 
 function! CloseOtherTabs()

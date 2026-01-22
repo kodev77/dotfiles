@@ -42,6 +42,8 @@ set signcolumn=auto
 set nowrap
 set clipboard=unnamedplus
 set noswapfile
+" statusline
+source ~/repo/dotfiles/.vim/config/ko-statusbar.vim
 
 " performance
 set updatetime=300
@@ -58,7 +60,7 @@ cabbrev tabnew Tabnew
 cabbrev tabe Tabnew
 cabbrev tabedit Tabnew
 nnoremap <leader>tt :Tabnew<CR>
-autocmd FileType netrw nmap <buffer> t :call NetrwTabOpen()<CR>
+autocmd FileType netrw nmap <buffer> <silent> t :call NetrwTabOpen()<CR>
 nnoremap <leader>tc :tabclose<CR>
 nnoremap <leader>to :call CloseOtherTabs()<CR>
 nnoremap <leader>tr :call RenameTab()<CR>
