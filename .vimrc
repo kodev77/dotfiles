@@ -5,6 +5,10 @@ Plug 'tpope/vim-fugitive'
 
 call plug#end()
 
+" colorscheme
+set background=dark
+colorscheme koehler
+
 " leader key
 let mapleader = " "
 
@@ -27,10 +31,12 @@ set incsearch
 set hlsearch
 
 " quality of life
+set splitbelow
 set scrolloff=8
 set signcolumn=auto
 set nowrap
 set clipboard=unnamedplus
+set noswapfile
 
 " performance
 set updatetime=300

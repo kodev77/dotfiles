@@ -51,6 +51,14 @@ else
     echo "broot icons already configured"
 fi
 
+# install tmux if not present
+if ! command -v tmux &> /dev/null; then
+    echo "installing tmux"
+    sudo apt install -y tmux
+else
+    echo "tmux already installed"
+fi
+
 # install eza if not present
 if ! command -v eza &> /dev/null; then
     echo "installing eza"
@@ -74,6 +82,9 @@ ln -sf ~/repo/dotfiles/.vimrc ~/.vimrc
 
 echo "linking .gitconfig"
 ln -sf ~/repo/dotfiles/.gitconfig ~/.gitconfig
+
+echo "linking .tmux.conf"
+ln -sf ~/repo/dotfiles/.tmux.conf ~/.tmux.conf
 
 echo "adding bashrc.local to .bashrc"
 if ! grep -q "repo/dotfiles/.bashrc.local" ~/.bashrc; then
