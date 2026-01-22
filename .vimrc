@@ -20,8 +20,13 @@ let mapleader = " "
 " line numbers
 set number
 
-" highlight current line
+" highlight current line (only in active window)
 set cursorline
+augroup CursorLineOnlyInActiveWindow
+    autocmd!
+    autocmd WinEnter * set cursorline
+    autocmd WinLeave * set nocursorline
+augroup END
 
 " tabs and indentation
 set expandtab
@@ -37,6 +42,7 @@ set hlsearch
 
 " quality of life
 set splitbelow
+set splitright
 set scrolloff=8
 set signcolumn=auto
 set nowrap
@@ -52,6 +58,15 @@ set timeoutlen=500
 " auto reload files changed outside vim
 set autoread
 au FocusGained,BufEnter * silent! checktime
+
+" show full path with Ctrl-g
+nnoremap <C-g> 1<C-g>
+
+" window navigation
+nnoremap <leader>h <C-w>h
+nnoremap <leader>j <C-w>j
+nnoremap <leader>k <C-w>k
+nnoremap <leader>l <C-w>l
 
 " tab management
 source ~/repo/dotfiles/.vim/config/ko-tabbar.vim
@@ -75,4 +90,4 @@ nnoremap <leader>8 8gt
 nnoremap <leader>9 9gt
 nnoremap <leader>0 10gt
 set tabline=%!CustomTabLine()
-set showtabline=2
+set showtabline=1

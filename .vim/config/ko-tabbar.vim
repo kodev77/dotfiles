@@ -52,7 +52,7 @@ function! CustomTabLine()
             let filetype = getbufvar(bufnr, '&filetype')
             let fname = bufname(bufnr)
             if filetype == 'netrw'
-                let label = 'FILES'
+                let label = 'NETRW'
             elseif filetype == 'fugitive' || fname =~# '^fugitive://'
                 let label = 'GIT'
             elseif filetype == 'help'
@@ -61,10 +61,20 @@ function! CustomTabLine()
                 let label = 'TERMINAL'
             elseif buftype == 'quickfix'
                 let label = 'QUICKFIX'
-            elseif fname != ''
-                let label = toupper(fnamemodify(fname, ':t'))
             else
-                let label = '[NO NAME]'
+                let ext = fnamemodify(fname, ':e')
+                let basename = fnamemodify(fname, ':t')
+                if ext != ''
+                    let label = toupper(ext)
+                elseif basename =~# '^\.' && filetype != ''
+                    let label = toupper(filetype)
+                elseif filetype != ''
+                    let label = toupper(filetype)
+                elseif fname != ''
+                    let label = toupper(basename)
+                else
+                    let label = '[NO NAME]'
+                endif
             endif
             let s .= ' ' . tablabel . ':' . label . ' '
         endif

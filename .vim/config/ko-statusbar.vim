@@ -3,7 +3,7 @@
 set laststatus=2
 set noshowmode
 set shortmess+=F
-set statusline=%#StatusMode#%{GetMode()}%#StatusBranch#%{GetBranch()}%#StatusLine#\ %#StatusFile#%{GetFilePath()}%#StatusFlags#\ %m%r%h%w%#StatusLine#%=%#StatusFileType#%{GetFileType()}%#StatusLine#%{GetSearchCount()}%#StatusMode#\ %p%%\ %l/%L:%c\
+set statusline=%!BuildStatusLine()
 
 hi StatusLine     ctermfg=White ctermbg=233 cterm=none guifg=#ffffff guibg=#121212 gui=none
 hi StatusLineNC   ctermfg=Gray  ctermbg=233 cterm=none guifg=#808080 guibg=#121212 gui=none
@@ -16,55 +16,72 @@ hi StatusModeInsert  ctermfg=232 ctermbg=Cyan     cterm=bold guifg=#000000 guibg
 hi StatusModeVisual  ctermfg=232 ctermbg=DarkYellow cterm=bold guifg=#000000 guibg=#aa8800 gui=bold
 hi StatusModeReplace ctermfg=232 ctermbg=Red      cterm=bold guifg=#000000 guibg=#ff0000 gui=bold
 hi StatusModeCommand ctermfg=232 ctermbg=Green    cterm=bold guifg=#000000 guibg=#00ff00 gui=bold
+" Inactive window highlights (muted)
+hi StatusModeNC      ctermfg=240 ctermbg=235 cterm=none guifg=#585858 guibg=#262626 gui=none
+hi StatusBranchNC    ctermfg=240 ctermbg=234 cterm=none guifg=#585858 guibg=#1c1c1c gui=none
+hi StatusFileNC      ctermfg=240 ctermbg=233 cterm=none guifg=#585858 guibg=#121212 gui=none
+hi StatusFileTypeNC  ctermfg=240 ctermbg=234 cterm=none guifg=#585858 guibg=#1c1c1c gui=none
+hi StatusFlagsNC     ctermfg=236 ctermbg=233 cterm=none guifg=#303030 guibg=#121212 gui=none
+
+function! BuildStatusLine()
+    let is_active = g:statusline_winid == win_getid()
+    if is_active
+        let s = '%#StatusMode#%{GetMode()}%#StatusBranch#%{GetBranch()}%#StatusLine# '
+        let s .= '%#StatusFile#%{GetFilePath()}%#StatusFlags# %m%r%h%w%#StatusLine#'
+        let s .= '%=%#StatusFileType#%{GetFileType()}%#StatusLine#%{GetSearchCount()}'
+        let s .= '%#StatusMode# %p%% %l/%L:%c '
+    else
+        let s = '%#StatusBranchNC#%{GetBranch()}%#StatusLineNC# '
+        let s .= '%#StatusFileNC#%{GetFilePath()}%#StatusFlagsNC# %m%r%h%w'
+        let s .= '%=%#StatusFileTypeNC#%{GetFileType()}%#StatusLineNC#'
+        let s .= '%#StatusModeNC# %p%% %l/%L:%c '
+    endif
+    return s
+endfunction
+
+function! GetModeNC()
+    return ''
+endfunction
+
+function! TruncateName(name)
+    let width = winwidth(0)
+    let mode_len = 12
+    let branch_len = exists('*FugitiveHead') && FugitiveHead() != '' ? len(FugitiveHead()) + 5 : 0
+    let filetype_len = &filetype != '' ? len(&filetype) + 6 : 0
+    let right_side = 20
+    let flags_len = 0
+    if &modified | let flags_len += 3 | endif
+    if &readonly | let flags_len += 4 | endif
+    let reserved = mode_len + branch_len + filetype_len + right_side + flags_len
+    let maxwidth = width - reserved
+    if maxwidth < 8
+        let maxwidth = 8
+    endif
+    if len(a:name) > maxwidth
+        return '...' . strpart(a:name, len(a:name) - maxwidth + 3)
+    endif
+    return a:name
+endfunction
 
 function! GetFilePath()
     let ft = &filetype
     let fname = expand('%:p')
     if ft == 'netrw'
         let path = exists('b:netrw_curdir') ? b:netrw_curdir : getcwd()
+        return TruncateName(fnamemodify(substitute(path, '/$', '', ''), ':t'))
     elseif ft == 'fugitive'
-        if exists('*FugitiveGitDir')
-            let gitdir = FugitiveGitDir()
-            let path = fnamemodify(gitdir, ':h')
-        else
-            return ''
-        endif
+        return 'Git Status'
     elseif ft == 'help'
-        return expand('%:t')
+        return TruncateName(expand('%:t'))
     elseif ft == 'qf'
         return 'Quickfix'
     elseif fname =~# '^fugitive://'
-        return 'Git: ' . fnamemodify(fname, ':t')
+        return TruncateName('Git: ' . fnamemodify(fname, ':t'))
     elseif fname == ''
         return '[No Name]'
     else
-        let path = fname
+        return TruncateName(expand('%:t'))
     endif
-    " Calculate available width for filepath dynamically
-    let width = winwidth(0)
-    let mode_len = 10
-    let branch_len = exists('*FugitiveHead') && FugitiveHead() != '' ? len(FugitiveHead()) + 4 : 0
-    let filetype_len = &filetype != '' ? len(&filetype) + 4 : 0
-    let right_side = 18
-    let reserved = mode_len + branch_len + filetype_len + right_side + 5
-    let maxwidth = width - reserved
-    if maxwidth < 20
-        let maxwidth = 20
-    endif
-    " Remove trailing slash if present
-    let path = substitute(path, '/$', '', '')
-    " Truncate if needed
-    if len(path) > maxwidth
-        let filename = fnamemodify(path, ':t')
-        let dirpath = fnamemodify(path, ':h')
-        let available = maxwidth - len(filename) - 4  " 4 for .../
-        if available > 0
-            let path = '...' . strpart(dirpath, len(dirpath) - available) . '/' . filename
-        else
-            let path = '...' . filename
-        endif
-    endif
-    return path
 endfunction
 
 function! GetBranch()
