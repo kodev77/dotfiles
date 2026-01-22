@@ -9,6 +9,11 @@ call plug#end()
 set background=dark
 colorscheme koehler
 
+" retro tab colors (msdos style)
+hi TabLineSel  ctermfg=232 ctermbg=Cyan  cterm=bold guifg=#000000 guibg=#00ffff gui=bold
+hi TabLine     ctermfg=37 ctermbg=23    cterm=bold guifg=#008888 guibg=#002222 gui=bold
+hi TabLineFill ctermfg=NONE ctermbg=NONE cterm=none guifg=#000000 guibg=#000000 gui=none
+
 " leader key
 let mapleader = " "
 
@@ -45,3 +50,11 @@ set timeoutlen=500
 " auto reload files changed outside vim
 set autoread
 au FocusGained,BufEnter * silent! checktime
+
+" tab management
+source ~/repo/dotfiles/.vim/config/ko-tabbar.vim
+nnoremap <leader>tt :tabnew<CR>
+nnoremap <leader>tc :tabclose<CR>
+nnoremap <leader>tr :call RenameTab()<CR>
+set tabline=%!CustomTabLine()
+set showtabline=2
