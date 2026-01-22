@@ -25,7 +25,16 @@ hi StatusFlagsNC     ctermfg=236 ctermbg=233 cterm=none guifg=#303030 guibg=#121
 
 function! BuildStatusLine()
     let is_active = g:statusline_winid == win_getid()
-    if is_active
+    let ft = getwinvar(g:statusline_winid, '&filetype')
+    if ft == 'fern'
+        if is_active
+            let s = '%#StatusBranch#%{GetBranch()}%#StatusLine#'
+            let s .= '%=%#StatusFileType#%{GetFileType()}%#StatusLine# '
+        else
+            let s = '%#StatusBranchNC#%{GetBranch()}%#StatusLineNC#'
+            let s .= '%=%#StatusFileTypeNC#%{GetFileType()}%#StatusLineNC# '
+        endif
+    elseif is_active
         let s = '%#StatusMode#%{GetMode()}%#StatusBranch#%{GetBranch()}%#StatusLine# '
         let s .= '%#StatusFile#%{GetFilePath()}%#StatusFlags# %m%r%h%w%#StatusLine#'
         let s .= '%=%#StatusFileType#%{GetFileType()}%#StatusLine#%{GetSearchCount()}'
@@ -66,7 +75,9 @@ endfunction
 function! GetFilePath()
     let ft = &filetype
     let fname = expand('%:p')
-    if ft == 'netrw'
+    if ft == 'fern'
+        return TruncateName(getcwd())
+    elseif ft == 'netrw'
         let path = exists('b:netrw_curdir') ? b:netrw_curdir : getcwd()
         return TruncateName(fnamemodify(substitute(path, '/$', '', ''), ':t'))
     elseif ft == 'fugitive'
@@ -122,6 +133,7 @@ function! GetFileType()
         \ 'sql': "\ue706",
         \ 'git': "\ue702",
         \ 'fugitive': "\ue702",
+        \ 'fern': "\uf07c",
         \ }
     let icon = get(icons, ft, "\uf15c")
     return '  ' . icon . ' ' . ft . ' '

@@ -16,8 +16,27 @@ let g:fzf_layout = { 'down': '40%' }
 " fern.vim settings
 let g:fern#renderer = 'nerdfont'
 
+" disable netrw
+let g:loaded_netrw = 1
+let g:loaded_netrwPlugin = 1
+
+" open fern instead of netrw when opening a directory
+augroup FernHijack
+  autocmd!
+  autocmd BufEnter * ++nested if isdirectory(expand('%')) | bd | exe 'Fern . -drawer -reveal=%' | endif
+augroup END
+
+" netrw replacement commands
+command! Ex Fern . -drawer -reveal=%
+command! Explore Fern . -drawer -reveal=%
+command! Vex Fern . -drawer -reveal=%
+command! Sex Fern . -drawer -reveal=%
+
 " fern custom keybindings
 let g:fern#default_hidden = 1
+let g:fern#renderer#nerdfont#indent_markers = 1
+let g:fern#renderer#nerdfont#root_symbol = "\uf07c  "
+
 
 let g:fern_project_root = getcwd()
 
@@ -44,6 +63,7 @@ function! s:fern_leave_and_cd() abort
 endfunction
 
 function! s:fern_init() abort
+  setlocal nonumber signcolumn=no
   nmap <buffer> <CR> :call <SID>fern_enter_and_cd()<CR>
   nmap <buffer> o <Plug>(fern-action-open)
   nmap <buffer> l <Plug>(fern-action-expand)
@@ -61,10 +81,16 @@ augroup END
 set background=dark
 colorscheme koehler
 
-" retro tab colors (msdos style)
-hi TabLineSel  ctermfg=232 ctermbg=Cyan  cterm=bold guifg=#000000 guibg=#00ffff gui=bold
-hi TabLine     ctermfg=37 ctermbg=23    cterm=bold guifg=#008888 guibg=#002222 gui=bold
-hi TabLineFill ctermfg=NONE ctermbg=NONE cterm=none guifg=#000000 guibg=#000000 gui=none
+" retro tab colors (orange theme)
+hi TabLineSel  ctermfg=232 ctermbg=208  cterm=bold guifg=#000000 guibg=#ff8800 gui=bold
+hi TabLine     ctermfg=232 ctermbg=208  cterm=none guifg=#000000 guibg=#ff8800 gui=none
+hi TabLineFill ctermfg=NONE ctermbg=208 cterm=none guifg=#000000 guibg=#ff8800 gui=none
+
+" fern root styling
+hi FernRootSymbol ctermfg=51 guifg=#00ffff cterm=bold gui=bold
+hi FernRootText ctermfg=51 guifg=#00ffff cterm=bold gui=bold
+
+
 
 " leader key
 let mapleader = " "
@@ -72,13 +98,6 @@ let mapleader = " "
 " line numbers
 set number
 
-" highlight current line (only in active window)
-set cursorline
-augroup CursorLineOnlyInActiveWindow
-    autocmd!
-    autocmd WinEnter * set cursorline
-    autocmd WinLeave * set nocursorline
-augroup END
 
 " tabs and indentation
 set expandtab

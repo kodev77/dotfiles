@@ -45,7 +45,7 @@ function! CustomTabLine()
         let tablabel = tabnr == 10 ? '0' : tabnr
         let tabname = gettabvar(tabnr, 'tabname', '')
         if tabname != ''
-            let s .= ' ' . tablabel . ':' . toupper(tabname) . ' '
+            let s .= ' ' . tablabel . ':' . tabname . ' '
         else
             let bufnr = tabpagebuflist(tabnr)[tabpagewinnr(tabnr) - 1]
             let buftype = getbufvar(bufnr, '&buftype')
@@ -62,16 +62,11 @@ function! CustomTabLine()
             elseif buftype == 'quickfix'
                 let label = 'QUICKFIX'
             else
-                let ext = fnamemodify(fname, ':e')
                 let basename = fnamemodify(fname, ':t')
-                if ext != ''
-                    let label = toupper(ext)
-                elseif basename =~# '^\.' && filetype != ''
-                    let label = toupper(filetype)
+                if basename != ''
+                    let label = toupper(basename)
                 elseif filetype != ''
                     let label = toupper(filetype)
-                elseif fname != ''
-                    let label = toupper(basename)
                 else
                     let label = '[NO NAME]'
                 endif
