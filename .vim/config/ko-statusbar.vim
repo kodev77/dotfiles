@@ -15,7 +15,7 @@ hi StatusModeNormal  ctermfg=232 ctermbg=Yellow    cterm=bold guifg=#000000 guib
 hi StatusModeInsert  ctermfg=232 ctermbg=Cyan     cterm=bold guifg=#000000 guibg=#00ffff gui=bold
 hi StatusModeVisual  ctermfg=232 ctermbg=DarkYellow cterm=bold guifg=#000000 guibg=#aa8800 gui=bold
 hi StatusModeReplace ctermfg=232 ctermbg=Red      cterm=bold guifg=#000000 guibg=#ff0000 gui=bold
-hi StatusModeCommand ctermfg=232 ctermbg=Green    cterm=bold guifg=#000000 guibg=#00ff00 gui=bold
+hi StatusModeCommand ctermfg=232 ctermbg=46       cterm=bold guifg=#000000 guibg=#00ff00 gui=bold
 " Inactive window highlights (muted)
 hi StatusModeNC      ctermfg=240 ctermbg=235 cterm=none guifg=#585858 guibg=#262626 gui=none
 hi StatusBranchNC    ctermfg=240 ctermbg=234 cterm=none guifg=#585858 guibg=#1c1c1c gui=none

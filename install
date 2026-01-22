@@ -51,6 +51,30 @@ else
     echo "broot icons already configured"
 fi
 
+# install fzf if not present
+if ! command -v fzf &> /dev/null; then
+    echo "installing fzf"
+    sudo apt install -y fzf
+else
+    echo "fzf already installed"
+fi
+
+# install xclip if not present
+if ! command -v xclip &> /dev/null; then
+    echo "installing xclip"
+    sudo apt install -y xclip
+else
+    echo "xclip already installed"
+fi
+
+# install ripgrep if not present
+if ! command -v rg &> /dev/null; then
+    echo "installing ripgrep"
+    sudo apt install -y ripgrep
+else
+    echo "ripgrep already installed"
+fi
+
 # install tmux if not present
 if ! command -v tmux &> /dev/null; then
     echo "installing tmux"

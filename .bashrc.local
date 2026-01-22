@@ -9,3 +9,34 @@ alias treea='eza --tree --icons -a'
 
 # broot
 source ~/.config/broot/launcher/bash/br
+
+# fzf aliases
+alias ff='fzf --height 40% --layout=reverse --border --preview "head -100 {}" --bind "ctrl-o:become(vim {})" --bind "ctrl-y:execute-silent(echo -n {} | xclip -selection clipboard)+abort"'
+alias fcd='cd $(find . -type d 2>/dev/null | fzf --height 40% --layout=reverse --border --preview "eza --tree --icons --level=2 {}")'
+alias ffd='cd "$(dirname "$(fzf --height 40% --layout=reverse --border --preview "head -100 {}")")"'
+
+# fuzzy history search and run
+unalias fh 2>/dev/null
+function fh {
+    local cmd
+    cmd=$(history | fzf --height 40% --layout=reverse --border --tac | sed "s/^[ ]*[0-9]*[ ]*//")
+    if [ -n "$cmd" ]; then
+        printf '> %s\n' "$cmd"
+        eval "$cmd"
+    fi
+}
+
+# ripgrep with grouped results (like vscode)
+alias rgs='rg --heading --line-number --color=always --colors "path:fg:cyan" --colors "path:style:bold"'
+
+# search file contents: fg <pattern>
+fg() {
+    local result
+    result=$(rg --line-number --color=always --colors 'path:fg:cyan' --colors 'path:style:bold' "$1" 2>/dev/null | fzf --ansi --height 80% --layout=reverse --border)
+    if [ -n "$result" ]; then
+        local clean=$(echo "$result" | sed 's/\x1b\[[0-9;]*m//g')
+        local file=$(echo "$clean" | cut -d: -f1)
+        local line=$(echo "$clean" | cut -d: -f2)
+        vim "+$line" "$file"
+    fi
+}

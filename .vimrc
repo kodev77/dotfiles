@@ -2,8 +2,60 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-fugitive'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'lambdalisue/fern.vim'
+Plug 'lambdalisue/nerdfont.vim'
+Plug 'lambdalisue/fern-renderer-nerdfont.vim'
 
 call plug#end()
+
+" fzf settings
+let g:fzf_layout = { 'down': '40%' }
+
+" fern.vim settings
+let g:fern#renderer = 'nerdfont'
+
+" fern custom keybindings
+let g:fern#default_hidden = 1
+
+let g:fern_project_root = getcwd()
+
+function! s:fern_enter_and_cd() abort
+  let helper = fern#helper#new()
+  let node = helper.sync.get_cursor_node()
+  let path = node._path
+  if isdirectory(path)
+    let g:fern_project_root = path
+    windo lcd `=path`
+    wincmd p
+    echo 'Working dir: ' . path
+  endif
+  call fern#action#call('enter')
+endfunction
+
+function! s:fern_leave_and_cd() abort
+  call fern#action#call('leave')
+  sleep 100m
+  let g:fern_project_root = fern#helper#new().sync.get_root_node()._path
+  windo lcd `=g:fern_project_root`
+  wincmd p
+  echo 'Working dir: ' . g:fern_project_root
+endfunction
+
+function! s:fern_init() abort
+  nmap <buffer> <CR> :call <SID>fern_enter_and_cd()<CR>
+  nmap <buffer> o <Plug>(fern-action-open)
+  nmap <buffer> l <Plug>(fern-action-expand)
+  nmap <buffer> h <Plug>(fern-action-collapse)
+  nmap <buffer> - :call <SID>fern_leave_and_cd()<CR>
+  nmap <buffer> m <Plug>(fern-action-mark:toggle)
+endfunction
+
+augroup fern-custom
+  autocmd!
+  autocmd FileType fern call s:fern_init()
+augroup END
 
 " colorscheme
 set background=dark
@@ -67,6 +119,66 @@ nnoremap <leader>h <C-w>h
 nnoremap <leader>j <C-w>j
 nnoremap <leader>k <C-w>k
 nnoremap <leader>l <C-w>l
+
+" fzf keybindings
+nnoremap <leader>ff :FilesG<CR>
+nnoremap <leader>fg :RgG<CR>
+
+" fern keybindings
+nnoremap <leader>e :Fern . -drawer -toggle -reveal=%<CR>
+nnoremap <leader>E :execute 'Fern ' . fnameescape(g:fern_project_root) . ' -drawer -reveal=%'<CR>
+
+" custom grouped ripgrep (vscode-style)
+function! s:rg_grouped_handler(line) abort
+    let parts = split(a:line, '\t')
+    if len(parts) >= 2
+        let file = parts[0]
+        let linenum = matchstr(parts[1], '^\s*\zs\d\+')
+        if !empty(linenum) && !empty(file)
+            execute 'edit +' . linenum . ' ' . fnameescape(file)
+        endif
+    endif
+endfunction
+
+function! RgGrouped(query) abort
+    let awk_script = '/^$/ { next } !/^[0-9]+:/ { file=$0; print "\t\033[1;90m" file "\033[0m" } /^[0-9]+:/ { print file "\t    " $0 }'
+    let initial_cmd = 'rg --heading --line-number ' . shellescape(a:query) . " | awk '" . awk_script . "'"
+    let reload_cmd = "rg --heading --line-number {q} | awk '" . awk_script . "'"
+    call fzf#run(fzf#wrap({
+        \ 'source': initial_cmd,
+        \ 'options': ['--ansi', '--with-nth=2..', '--delimiter=\t', '--height=80%', '--layout=reverse', '--border',
+        \             '--disabled', '--query', a:query,
+        \             '--bind', 'change:reload:' . reload_cmd],
+        \ 'sink': function('s:rg_grouped_handler')
+    \ }))
+endfunction
+
+command! -nargs=* RgG call RgGrouped(<q-args>)
+
+" custom grouped files (vscode-style)
+function! s:files_grouped_handler(line) abort
+    let parts = split(a:line, '\t')
+    if len(parts) >= 2
+        let file = parts[0]
+        if !empty(file) && filereadable(file)
+            execute 'edit ' . fnameescape(file)
+        endif
+    endif
+endfunction
+
+function! FilesGrouped() abort
+    let awk_script = '{ dir=$0; gsub(/[^\/]+$/, "", dir); file=$0; gsub(/.*\//, "", file); if (dir != lastdir) { print "\t\033[1;90m" dir "\033[0m"; lastdir=dir } print $0 "\t    " file }'
+    let initial_cmd = "find . -type f -not -path '*/\\.git/*' | sort | awk '" . awk_script . "'"
+    let reload_cmd = "find . -type f -not -path '*/\\.git/*' | grep -i {q} | sort | awk '" . awk_script . "'"
+    call fzf#run(fzf#wrap({
+        \ 'source': initial_cmd,
+        \ 'options': ['--ansi', '--with-nth=2..', '--delimiter=\t', '--height=80%', '--layout=reverse', '--border',
+        \             '--disabled', '--bind', 'change:reload:' . reload_cmd],
+        \ 'sink': function('s:files_grouped_handler')
+    \ }))
+endfunction
+
+command! FilesG call FilesGrouped()
 
 " tab management
 source ~/repo/dotfiles/.vim/config/ko-tabbar.vim
