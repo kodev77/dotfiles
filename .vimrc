@@ -62,6 +62,20 @@ function! s:fern_leave_and_cd() abort
   echo 'Working dir: ' . g:fern_project_root
 endfunction
 
+function! s:fern_rename_prompt() abort
+  let helper = fern#helper#new()
+  let node = helper.sync.get_cursor_node()
+  let old_path = node._path
+  let old_name = fnamemodify(old_path, ':t')
+  let dir = fnamemodify(old_path, ':h')
+  let new_name = input('Rename: ', old_name)
+  if new_name != '' && new_name != old_name
+    let new_path = dir . '/' . new_name
+    call rename(old_path, new_path)
+    call fern#action#call('reload:all')
+  endif
+endfunction
+
 function! s:fern_init() abort
   setlocal nonumber signcolumn=no
   nmap <buffer> <CR> :call <SID>fern_enter_and_cd()<CR>
@@ -70,6 +84,8 @@ function! s:fern_init() abort
   nmap <buffer> h <Plug>(fern-action-collapse)
   nmap <buffer> - :call <SID>fern_leave_and_cd()<CR>
   nmap <buffer> m <Plug>(fern-action-mark:toggle)
+  nmap <buffer> D <Plug>(fern-action-remove)
+  nmap <buffer> R :call <SID>fern_rename_prompt()<CR>
 endfunction
 
 augroup fern-custom
