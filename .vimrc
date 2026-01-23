@@ -7,8 +7,78 @@ Plug 'junegunn/fzf.vim'
 Plug 'lambdalisue/fern.vim'
 Plug 'lambdalisue/nerdfont.vim'
 Plug 'lambdalisue/fern-renderer-nerdfont.vim'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'tpope/vim-dadbod'
+Plug 'kristijanhusak/vim-dadbod-ui'
+Plug 'kristijanhusak/vim-dadbod-completion'
 
 call plug#end()
+
+" coc.nvim extensions (auto-installed on startup)
+let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-sql', 'coc-sqlfluff', 'coc-omnisharp']
+
+" coc.nvim settings
+" Use tab for trigger completion with characters ahead and navigate
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> to accept selected completion item
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+      \ : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> to trigger completion
+inoremap <silent><expr> <c-space> coc#refresh()
+
+" Navigate diagnostics
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" GoTo code navigation
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Show documentation in preview window
+nnoremap <silent> K :call ShowDocumentation()<CR>
+
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" Symbol renaming
+nmap <leader>rn <Plug>(coc-rename)
+
+" Code actions
+nmap <leader>ca <Plug>(coc-codeaction-cursor)
+xmap <leader>ca <Plug>(coc-codeaction-selected)
+
+" vim-dadbod-ui settings
+let g:db_ui_use_nerd_fonts = 1
+let g:db_ui_show_database_icon = 1
+let g:db_ui_win_position = 'left'
+let g:db_ui_winwidth = 40
+
+" dadbod-ui keybindings
+nnoremap <leader>db :DBUIToggle<CR>
+nnoremap <leader>df :DBUIFindBuffer<CR>
+nnoremap <leader>dl :DBUILastQueryInfo<CR>
+
+" dadbod-completion setup
+autocmd FileType sql,mysql,plsql,typescript setlocal omnifunc=vim_dadbod_completion#omni
+autocmd FileType dbui nmap <buffer> o <Plug>(DBUI_SelectLine)
 
 " fzf settings
 let g:fzf_layout = { 'down': '40%' }

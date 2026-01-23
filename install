@@ -83,6 +83,48 @@ else
     echo "tmux already installed"
 fi
 
+# install nodejs if not present (required for coc.nvim)
+if ! command -v node &> /dev/null; then
+    echo "installing nodejs"
+    sudo apt install -y nodejs npm
+else
+    echo "nodejs already installed"
+fi
+
+# install pipx if not present (for Python CLI tools)
+if ! command -v pipx &> /dev/null; then
+    echo "installing pipx"
+    sudo apt install -y pipx
+    pipx ensurepath
+else
+    echo "pipx already installed"
+fi
+
+# install sqlfluff if not present (required for coc-sqlfluff)
+if ! command -v sqlfluff &> /dev/null; then
+    echo "installing sqlfluff"
+    pipx install sqlfluff
+else
+    echo "sqlfluff already installed"
+fi
+
+# install mssql-tools (sqlcmd) if not present (required for vim-dadbod SQL Server)
+if ! command -v sqlcmd &> /dev/null; then
+    echo "installing mssql-tools (sqlcmd)"
+    # add Microsoft GPG key
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+    # add Microsoft repo directly
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/$(lsb_release -rs)/prod $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/mssql-release.list
+    sudo apt update
+    ACCEPT_EULA=Y sudo apt install -y mssql-tools18 unixodbc-dev
+    # add sqlcmd to PATH
+    if ! grep -q '/opt/mssql-tools18/bin' ~/.bashrc; then
+        echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
+    fi
+else
+    echo "mssql-tools already installed"
+fi
+
 # install eza if not present
 if ! command -v eza &> /dev/null; then
     echo "installing eza"
