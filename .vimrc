@@ -11,11 +11,12 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'tpope/vim-dadbod'
 Plug 'kristijanhusak/vim-dadbod-ui'
 Plug 'kristijanhusak/vim-dadbod-completion'
+Plug 'OrangeT/vim-csharp'
 
 call plug#end()
 
 " coc.nvim extensions (auto-installed on startup)
-let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-sql', 'coc-sqlfluff', 'coc-omnisharp']
+let g:coc_global_extensions = ['coc-json', 'coc-tsserver', 'coc-sql', 'coc-sqlfluff', '@yaegassy/coc-csharp-ls']
 
 " coc.nvim settings
 " Use tab for trigger completion with characters ahead and navigate
