@@ -71,14 +71,108 @@ let g:db_ui_show_database_icon = 1
 let g:db_ui_win_position = 'left'
 let g:db_ui_winwidth = 40
 
-" dadbod-ui keybindings
-nnoremap <leader>db :DBUIToggle<CR>
-nnoremap <leader>df :DBUIFindBuffer<CR>
-nnoremap <leader>dl :DBUILastQueryInfo<CR>
+" Execute query with ROW_COUNT() appended for MySQL UPDATE/DELETE/INSERT
+function! ExecuteDBQuery(query) abort
+  let l:query = trim(a:query)
+  if empty(l:query)
+    return
+  endif
+
+  " Get current DB connection
+  let l:db = get(b:, 'db', get(g:, 'db', ''))
+  let l:is_mysql = l:db =~? '^mysql:'
+
+  " Check if it's a modifying query (UPDATE/DELETE/INSERT)
+  let l:is_modify = l:query =~? '\v^\s*(UPDATE|DELETE|INSERT)\s'
+
+  " For MySQL modifying queries, append ROW_COUNT() to get affected rows
+  if l:is_mysql && l:is_modify
+    " Remove trailing semicolon if present, then add our appended query
+    let l:query = substitute(l:query, '\s*;\s*$', '', '')
+    let l:query = l:query . "; SELECT ROW_COUNT() as rows_affected;"
+  endif
+
+  execute 'DB ' . l:query
+endfunction
+
+let g:db_ui_save_location = expand('~/.local/share/db_ui')
+let g:db_ui_execute_on_save = 0
+
+" Grab text from visible popup and put in clipboard
+function! CopyPopupContent()
+  let popups = popup_list()
+  if empty(popups)
+    echo "No popups visible"
+    return
+  endif
+  for id in popups
+    let lines = getbufline(winbufnr(id), 1, '$')
+    if !empty(lines)
+      let @+ = join(lines, "\n")
+      echo "Copied " . len(lines) . " lines to clipboard"
+      return
+    endif
+  endfor
+endfunction
+
+" Select database connection using fzf (reads from dadbod-ui saved connections)
+function! DBSelectConnection()
+  let l:save_loc = get(g:, 'db_ui_save_location', expand('~/.local/share/db_ui'))
+  let l:conn_file = l:save_loc . '/connections.json'
+
+  if !filereadable(l:conn_file)
+    echo "No saved connections found at " . l:conn_file
+    return
+  endif
+
+  let l:json = join(readfile(l:conn_file), '')
+  let l:connections = json_decode(l:json)
+
+  if empty(l:connections)
+    echo "No connections configured"
+    return
+  endif
+
+  " Build list of connection names and store URLs
+  let s:db_urls = {}
+  for conn in l:connections
+    let l:name = get(conn, 'name', '')
+    let l:url = get(conn, 'url', '')
+    if !empty(l:name) && !empty(l:url)
+      let s:db_urls[l:name] = l:url
+    endif
+  endfor
+
+  call fzf#run(fzf#wrap({
+    \ 'source': keys(s:db_urls),
+    \ 'sink': function('s:set_db_connection'),
+    \ 'options': '--prompt="Select DB> "'
+  \ }))
+endfunction
+
+function! s:set_db_connection(name)
+  let b:db = s:db_urls[a:name]
+  echo "Connected to: " . a:name
+endfunction
+
+command! DBSelect call DBSelectConnection()
 
 " dadbod-completion setup
 autocmd FileType sql,mysql,plsql,typescript setlocal omnifunc=vim_dadbod_completion#omni
 autocmd FileType dbui nmap <buffer> o <Plug>(DBUI_SelectLine)
+
+" Custom SQL output formatter (autoload/dadbod_format.vim)
+augroup dadbod_format
+  autocmd!
+  autocmd FileType dbui setlocal modifiable
+  autocmd FileType dbout setlocal modifiable
+  autocmd FileType dbout setlocal nofoldenable
+  autocmd FileType dbout call dadbod_format#auto_format()
+  autocmd BufEnter * if &filetype ==# 'dbout' && !get(b:, 'dbout_is_formatted', 0) | call dadbod_format#format() | endif
+  autocmd FileType dbout nnoremap <buffer> <CR> :call dadbod_format#expand_cell()<CR>
+  autocmd FileType dbout nnoremap <buffer> <leader>fr :call dadbod_format#toggle_raw()<CR>
+  autocmd FileType dbout nnoremap <buffer> q :call dadbod_format#close_expand()<CR>
+augroup END
 
 " fzf settings
 let g:fzf_layout = { 'down': '40%' }
@@ -97,40 +191,16 @@ augroup FernHijack
 augroup END
 
 " netrw replacement commands
-command! Ex Fern . -drawer -reveal=%
-command! Explore Fern . -drawer -reveal=%
-command! Vex Fern . -drawer -reveal=%
-command! Sex Fern . -drawer -reveal=%
+command! Ex Fern %:h -reveal=%
+command! Explore Fern %:h -reveal=%
+command! Vex vsplit | Fern %:h -reveal=%
+command! Sex split | Fern %:h -reveal=%
 
 " fern custom keybindings
 let g:fern#default_hidden = 1
 let g:fern#renderer#nerdfont#indent_markers = 1
 let g:fern#renderer#nerdfont#root_symbol = "\uf07c  "
 
-
-let g:fern_project_root = getcwd()
-
-function! s:fern_enter_and_cd() abort
-  let helper = fern#helper#new()
-  let node = helper.sync.get_cursor_node()
-  let path = node._path
-  if isdirectory(path)
-    let g:fern_project_root = path
-    windo lcd `=path`
-    wincmd p
-    echo 'Working dir: ' . path
-  endif
-  call fern#action#call('enter')
-endfunction
-
-function! s:fern_leave_and_cd() abort
-  call fern#action#call('leave')
-  sleep 100m
-  let g:fern_project_root = fern#helper#new().sync.get_root_node()._path
-  windo lcd `=g:fern_project_root`
-  wincmd p
-  echo 'Working dir: ' . g:fern_project_root
-endfunction
 
 function! s:fern_rename_prompt() abort
   let helper = fern#helper#new()
@@ -148,11 +218,11 @@ endfunction
 
 function! s:fern_init() abort
   setlocal nonumber signcolumn=no
-  nmap <buffer> <CR> :call <SID>fern_enter_and_cd()<CR>
+  nmap <buffer> <CR> <Plug>(fern-action-open-or-enter)
   nmap <buffer> o <Plug>(fern-action-open)
   nmap <buffer> l <Plug>(fern-action-expand)
   nmap <buffer> h <Plug>(fern-action-collapse)
-  nmap <buffer> - :call <SID>fern_leave_and_cd()<CR>
+  nmap <buffer> - <Plug>(fern-action-leave)
   nmap <buffer> m <Plug>(fern-action-mark:toggle)
   nmap <buffer> D <Plug>(fern-action-remove)
   nmap <buffer> R :call <SID>fern_rename_prompt()<CR>
@@ -167,6 +237,17 @@ augroup END
 set background=dark
 colorscheme koehler
 
+" Dbout syntax highlighting (for dadbod_format.vim)
+highlight link DboutBorder Normal
+highlight DboutHeader ctermfg=White cterm=bold guifg=fg gui=bold
+highlight link DboutString Include
+highlight link DboutNumber Statement
+highlight link DboutGuid Type
+highlight link DboutTimestamp Function
+highlight link DboutTruncated Directory
+highlight link DboutNull Comment
+highlight link DboutRowCount Comment
+
 " retro tab colors (orange theme)
 hi TabLineSel  ctermfg=232 ctermbg=208  cterm=bold guifg=#000000 guibg=#ff8800 gui=bold
 hi TabLine     ctermfg=232 ctermbg=208  cterm=none guifg=#000000 guibg=#ff8800 gui=none
@@ -180,6 +261,16 @@ hi FernRootText ctermfg=51 guifg=#00ffff cterm=bold gui=bold
 
 " leader key
 let mapleader = " "
+
+" dadbod keybindings
+nnoremap <leader>db :DBUIToggle<CR>
+nnoremap <leader>df :DBUIFindBuffer<CR>
+nnoremap <leader>dl :DBUILastQueryInfo<CR>
+nnoremap <leader>ds :DBSelect<CR>
+nnoremap <leader>dF :call dadbod_format#format_from_anywhere()<CR>
+nnoremap <leader>r :call ExecuteDBQuery(getline('.'))<CR>
+vnoremap <leader>r "ry:call ExecuteDBQuery(@r)<CR>
+nnoremap <leader>cp :call CopyPopupContent()<CR>
 
 " line numbers
 set number
@@ -231,7 +322,7 @@ nnoremap <leader>fg :RgG<CR>
 
 " fern keybindings
 nnoremap <leader>e :Fern . -drawer -toggle -reveal=%<CR>
-nnoremap <leader>E :execute 'Fern ' . fnameescape(g:fern_project_root) . ' -drawer -reveal=%'<CR>
+nnoremap <leader>E :Fern %:h -reveal=%<CR>
 
 " custom grouped ripgrep (vscode-style)
 function! s:rg_grouped_handler(line) abort
