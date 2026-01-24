@@ -170,6 +170,14 @@ else
     echo "mssql-tools already installed"
 fi
 
+# install mysql-client if not present (required for vim-dadbod MySQL)
+if ! command -v mysql &> /dev/null; then
+    echo "installing mysql-client"
+    sudo apt install -y mysql-client
+else
+    echo "mysql-client already installed"
+fi
+
 # install eza if not present
 if ! command -v eza &> /dev/null; then
     echo "installing eza"
@@ -196,6 +204,11 @@ ln -sf ~/repo/dotfiles/.gitconfig ~/.gitconfig
 
 echo "linking .tmux.conf"
 ln -sf ~/repo/dotfiles/.tmux.conf ~/.tmux.conf
+
+echo ""
+echo "NOTE: Run these commands in vim to complete setup:"
+echo "  :PlugInstall              - install vim plugins"
+echo "  :VimspectorInstall netcoredbg - install .NET debugger"
 
 echo "adding bashrc.local to .bashrc"
 if ! grep -q "repo/dotfiles/.bashrc.local" ~/.bashrc; then
