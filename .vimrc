@@ -196,6 +196,7 @@ augroup END
 " netrw replacement commands (open in current file's directory)
 command! Ex Fern %:h
 command! Explore Fern %:h
+command! Rex Fern %:h -reveal=%
 command! Vex call s:fern_split('vsplit')
 command! Sex call s:fern_split('split')
 
@@ -233,6 +234,8 @@ function! s:fern_init() abort
   setlocal nonumber signcolumn=no
   nmap <buffer> <CR> <Plug>(fern-action-open-or-enter)
   nmap <buffer> o <Plug>(fern-action-open)
+  nmap <buffer> v <Plug>(fern-action-open:vsplit)
+  nmap <buffer> s <Plug>(fern-action-open:split)
   nmap <buffer> l <Plug>(fern-action-expand)
   nmap <buffer> h <Plug>(fern-action-collapse)
   nmap <buffer> - <Plug>(fern-action-leave)
