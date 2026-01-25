@@ -1,3 +1,6 @@
+# Custom sudo prompt with lock icon
+export SUDO_PROMPT="[sudo] password for %p 🔒: "
+
 # Git prompt
 parse_git_branch() {
     git branch 2>/dev/null | sed -n 's/* \(.*\)/ (\1)/p'
@@ -13,6 +16,7 @@ alias tree='eza --tree --icons --group-directories-first'
 alias tree2='eza --tree --icons --level=2'
 alias tree3='eza --tree --icons --level=3'
 alias treea='eza --tree --icons -a'
+alias tr='tree2'
 
 # broot
 source ~/.config/broot/launcher/bash/br

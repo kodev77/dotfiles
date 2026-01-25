@@ -7,6 +7,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'lambdalisue/fern.vim'
 Plug 'lambdalisue/nerdfont.vim'
 Plug 'lambdalisue/fern-renderer-nerdfont.vim'
+Plug 'lambdalisue/fern-git-status.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'tpope/vim-dadbod'
 Plug 'kristijanhusak/vim-dadbod-ui'
@@ -189,14 +190,24 @@ let g:loaded_netrwPlugin = 1
 " open fern instead of netrw when opening a directory
 augroup FernHijack
   autocmd!
-  autocmd BufEnter * ++nested if isdirectory(expand('%')) | bd | exe 'Fern . -drawer -reveal=%' | endif
+  autocmd BufEnter * ++nested if isdirectory(expand('%')) | exe 'Fern ' . expand('%') | endif
 augroup END
 
-" netrw replacement commands
-command! Ex Fern %:h -reveal=%
-command! Explore Fern %:h -reveal=%
-command! Vex vsplit | Fern %:h -reveal=%
-command! Sex split | Fern %:h -reveal=%
+" netrw replacement commands (open in current file's directory)
+command! Ex Fern %:h
+command! Explore Fern %:h
+command! Vex call s:fern_split('vsplit')
+command! Sex call s:fern_split('split')
+
+function! s:fern_split(cmd) abort
+  let dir = expand('%:h')
+  execute a:cmd
+  execute 'Fern ' . dir
+endfunction
+
+" fern-git-status settings (disable some noise)
+let g:fern_git_status#disable_ignored = 1
+let g:fern_git_status#disable_untracked = 1
 
 " fern custom keybindings
 let g:fern#default_hidden = 1
@@ -252,7 +263,7 @@ highlight link DboutRowCount Comment
 
 " retro tab colors (orange theme)
 hi TabLineSel  ctermfg=232 ctermbg=208  cterm=bold guifg=#000000 guibg=#ff8800 gui=bold
-hi TabLine     ctermfg=232 ctermbg=208  cterm=none guifg=#000000 guibg=#ff8800 gui=none
+hi TabLine     ctermfg=130 ctermbg=208  cterm=bold guifg=#af5f00 guibg=#ff8800 gui=bold
 hi TabLineFill ctermfg=NONE ctermbg=208 cterm=none guifg=#000000 guibg=#ff8800 gui=none
 
 " fern root styling
@@ -338,9 +349,6 @@ nnoremap <leader>l <C-w>l
 nnoremap <leader>ff :FilesG<CR>
 nnoremap <leader>fg :RgG<CR>
 
-" fern keybindings
-nnoremap <leader>e :Fern . -drawer -toggle -reveal=%<CR>
-nnoremap <leader>E :Fern %:h -reveal=%<CR>
 
 " custom grouped ripgrep (vscode-style)
 function! s:rg_grouped_handler(line) abort
