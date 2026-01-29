@@ -1,4 +1,37 @@
-" Custom tabline functions
+" Custom tabbar configuration
+
+" Tab colors (orange theme)
+hi TabLineSel  ctermfg=232 ctermbg=208  cterm=bold guifg=#000000 guibg=#ff8800 gui=bold
+hi TabLine     ctermfg=130 ctermbg=208  cterm=bold guifg=#af5f00 guibg=#ff8800 gui=bold
+hi TabLineFill ctermfg=NONE ctermbg=208 cterm=none guifg=#000000 guibg=#ff8800 gui=none
+
+" Tab navigation
+nnoremap <leader>tt :Tabnew<CR>
+nnoremap <leader>tc :tabclose<CR>
+nnoremap <leader>to :call CloseOtherTabs()<CR>
+nnoremap <leader>tr :call RenameTab()<CR>
+nnoremap <leader>1 1gt
+nnoremap <leader>2 2gt
+nnoremap <leader>3 3gt
+nnoremap <leader>4 4gt
+nnoremap <leader>5 5gt
+nnoremap <leader>6 6gt
+nnoremap <leader>7 7gt
+nnoremap <leader>8 8gt
+nnoremap <leader>9 9gt
+nnoremap <leader>0 10gt
+
+" Limit to 10 tabs
+command! -nargs=* Tabnew if tabpagenr('$') < 10 | tabnew <args> | else | echo "Max 10 tabs" | endif
+cabbrev tabnew Tabnew
+cabbrev tabe Tabnew
+cabbrev tabedit Tabnew
+
+" Use custom tabline
+set showtabline=1
+set tabline=%!CustomTabLine()
+
+" Functions
 
 function! NetrwTabOpen()
     if tabpagenr('$') >= 10
