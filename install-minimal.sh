@@ -20,6 +20,7 @@ echo "Installing minimal profile..."
 ./install.d/vim-fzf.sh
 ./install.d/vim-ripgrep.sh
 ./install.d/bash-fzf.sh
+./install.d/bash-bat.sh
 ./install.d/bash-ripgrep.sh
 
 echo ""

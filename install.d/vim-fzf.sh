@@ -13,10 +13,12 @@ fi
 
 log_info "Setting up fzf..."
 
-if ! check_cmd fzf; then
-    install_apt fzf
+if [ -d "$HOME/.fzf" ]; then
+    log_info "fzf already installed (git)"
 else
-    log_info "fzf already installed"
+    log_info "Installing fzf from GitHub..."
+    git clone --depth 1 https://github.com/junegunn/fzf.git "$HOME/.fzf"
+    "$HOME/.fzf/install" --bin
 fi
 
 mkdir -p "$DOTFILES_DIR/.vim/plugins"

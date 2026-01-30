@@ -1,0 +1,1 @@
+Plug 'lambdalisue/nerdfont.vim'
